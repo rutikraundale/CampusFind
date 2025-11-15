@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
-<body class="bg-[#1a1a1d]">
+<body class="bg-[#1a1a1d] scroll-smooth">
     <!-- Navbar Start... -->
     <nav class="h-auto w-full m-3 p-3 flex justify-between items-center">
         <div class="flex justify-center items-center m-2 p-2">
@@ -18,9 +18,9 @@
             <p class="text-white font-poppins text-xl font-bold m-2 p-2 md:text-3xl ">BackToOwner</p>
         </div>
         <ul class="md:flex hidden font-semibold gap-2">
-            <li class="mx-[14px] text-white font-poppins cursor-pointer text-[19px]">Home</li>
-            <li class="mx-[14px] text-white font-poppins cursor-pointer text-[19px]">Browse Items</li>
-            <li class="mx-[14px] text-white font-poppins cursor-pointer text-[19px]">About us</li>
+            <li class="mx-[14px] text-white font-poppins cursor-pointer text-[19px] hover:border-b-2 hover:border-white pb-2">Home</li>
+            <li class="mx-[14px] text-white font-poppins cursor-pointer text-[19px] hover:border-b-2 hover:border-white pb-2">Browse Items</li>
+            <li class="mx-[14px] text-white font-poppins cursor-pointer text-[19px] hover:border-b-2 hover:border-white pb-2">About us</li>
         </ul>
         <div class=" hidden md:flex  items-center gap-2">
             <a class="mx-[14px] text-white text-[19px] font-poppins cursor-pointer font-semibold m-2 p-2 hover:border border-white rounded-md e-28 block"
@@ -36,22 +36,24 @@
     <!-- Navbar Ends Here -->
 
     <!-- Main Section to put lost item -->
-    <header class="h-auto w-100 flex flex-wrap text-center items-center">
+    <header class="flex flex-col h-auto w-100 md:flex md:flex-wrap  text-center items-center">
         <div>
-            <form class="flex w-full h-auto flex-wap text-center items-center p-4 m-4" action="#">
+            <form class="flex flex-col w-full h-auto flex-wrap  items-center p-4 m-4 md:flex  md:flex-row" action="#">
                 <input
-                    class="w-[700px] h-9 m-4 p-4 bg-transparent rounded-md text-white placeholder:text-gray-400 border border-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
+                    class="w-[400px] h-7 m-2 p-2 md:w-[700px] md:h-9 bg-transparent rounded-md text-white placeholder:text-gray-400 border border-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
                     type="search" placeholder="Search by keywords..." name="search" id="cat-search">
 
                 <div class="flex items-center m-4 space-x-2">
-                    <!-- <label for="sort-opt" class="text-white text-xl font-medium">Filters :</label> -->
                     <select name="sort" id="sort-opt"
-                        class="h-9 px-4 rounded-md bg-black bg-opacity-50 text-white border border-white focus:outline-none focus:ring-2 focus:ring-white">
-                        <option value="relevance">Relevance</option>
-                        <option value="latest">Sort by Latest</option>
-                        <option value="oldest">Sort by Oldest</option>
+                        class="h-7 px-4 md:h-9 md:px-4  rounded-md bg-black bg-opacity-50 text-white border border-white focus:outline-none focus:ring-2 focus:ring-white">
+                        <option class="bg-black text-white" value="relevance">Relevance</option>
+                        <option class="bg-black text-white" value="latest">Sort by Latest</option>
+                        <option class="bg-black text-white" value="oldest">Sort by Oldest</option>
                     </select>
                 </div>
+
+
+
 
 
             </form>
@@ -59,6 +61,63 @@
 
     </header>
 
+
+    <!-- =====Main Section==== -->
+    <main>
+        <div class="w-full h-auto m-4 p-4 flex flex-wrap justify-center items-center ">
+            <select name="category" id="cate"
+                class="w-full max-w-[110px] h-9 m-2 p-2 md:max-w-[180px] md:h-10 md:p-2 md:m-3 rounded-md text-white bg-black text-base bg-opacity-50 border border-white focus:outline-none focus:ring-2 focus:ring-white ">
+                <option class="bg-black text-white" value="Select Category">Select Cateogory</option>
+                <option class="bg-black text-white" value="Electronic devices">Electronic devices</option>
+                <option class="bg-black text-white" value="Bags">Bagpack</option>
+                <option class="bg-black text-white" value="Document">Document</option>
+                <option class="bg-black text-white" value="keys">Keys</option>
+                <option class="bg-black text-white" value="Bottels/Tiffins">Bottels/Tiffens</option>
+                <option class="bg-black text-white" value="Identity Card">Identity Card</option>
+                <option class="bg-black text-white" value="Cloths/Garments">Cloths/Garments</option>
+                <option class="bg-black text-white" value="Staff Items">Staff items</option>
+            </select>
+
+            <input type="date" name="date" id="date_find"
+                class="w-full max-w-[110px] h-9 m-2 p-2 md:max-w-[180px] md:h-10 md:p-2 md:m-3 rounded-md text-black  bg-gray-500 text-base bg-opacity-50 border border-white focus:outline-none focus:ring-2 focus:ring-white">
+
+            <select name="location" id="location"
+                class="w-full max-w-[110px] h-9 m-2 p-2 md:max-w-[180px] md:h-10 md:p-2 md:m-3 rounded-md text-white bg-black text-base bg-opacity-50 border border-white focus:outline-none focus:ring-2 focus:ring-white">
+                <option class="bg-black text-white" value="Select location">Select location</option>
+                <option class="bg-black text-white" value="Four Square">Four Square</option>
+                <option class="bg-black text-white" value="Basketball Court">Basketball Court</option>
+                <option class="bg-black text-white" value="Parking">Parking</option>
+                <option class="bg-black text-white" value="Front Gate">Front Gate</option>
+                <option class="bg-black text-white" value="Main Ground">Main Ground</option>
+                <option class="bg-black text-white" value="C-Building">C-Building</option>
+                <option class="bg-black text-white" value="B-Building">B-Building</option>
+                <option class="bg-black text-white" value="A-Building">A-Building</option>
+            </select>
+
+            <button type="submit"
+                class="flex items-center gap-1 px-3 py-2 m-2 rounded-md bg-white text-black text-sm md:text-base font-medium border border-black hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black transition">
+                <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M12.9 14.32a8 8 0 111.414-1.414l4.387 4.387a1 1 0 01-1.414 1.414l-4.387-4.387zM8 14a6 6 0 100-12 6 6 0 000 12z"
+                        clip-rule="evenodd" />
+                </svg>
+                <span class="hidden sm:inline">Search</span>
+            </button>
+
+
+    </main>
+    <section class="w-full h-auto flex flex-wrap flex-col md:flex md:flex-row">
+        <div class=" w-full h-auto flex flex-col justify-center items-center text-center flex-wrap gap-2 mx-4 p-2 md:flex md:flex-row md:p-2 md:m-2 ">
+            <button class="w-auto h-auto m-4 p-1 text-base text-center bg-white text-black rounded-lg font-semibold  hover:border border-white hover:bg-black hover:text-white md:p-2 md:m-4 md:w-[200px] md:h-11 md:text-xl">Post Items</button>
+            <button class="w-auto h-auto m-4 p-1 text-base text-center bg-white text-black rounded-lg font-semibold  hover:border border-white hover:bg-black hover:text-white md:p-2 md:m-4 md:w-[200px] md:h-11 md:text-xl">Find Items</button>
+        </div>
+    </section>
+
+    <section class="w-full h-auto flex flex-wrap flex-col md:flex md:flex-row">
+            <div class="grid-cols-5">
+
+            </div>
+    </section>
 </body>
 
 </html>
