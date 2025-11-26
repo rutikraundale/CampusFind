@@ -1,1 +1,5 @@
 @import "tailwindcss";
+.main{
+    display: flex;
+    flex-grow: 1;
+}
