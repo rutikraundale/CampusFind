@@ -3,25 +3,25 @@ import { Link, useNavigate } from "react-router-dom";
 // Reusable Card Component
 
 
-const FoundItemCard = ({ img, category, location }) => (
+const FoundItemCard = ({ img, category, location,status,date }) => (
   
 
   <div className="w-80 md:w-[350px] m-4 rounded-lg flex flex-col shadow-md bg-gray-800 text-white">
     <img src={img} alt={category} className="w-full h-[200px] object-cover rounded-t-xl" />
     
-    <div className="m-2 p-1 flex flex-wrap items-center">
-      <p className="text-base md:text-lg">Category :</p>
-      <p className="text-base md:text-lg">{category}</p>
+    <div className="m-2 p-1 flex-col flex-wrap items-center">
+      <p className="text-base"><span className="text-white text-base">Category: </span>{category}</p>
+      <p className="text-red-600 font-semibold"><span className="text-white text-base">Location: </span> {location}</p>
+      <p className="text-white text-base"><span>Status: </span>{status} </p>
+      <p className="text-white text-base"><span>Post on: </span>{date} </p>
     </div>
 
     <div className="w-full flex flex-wrap justify-between items-center gap-2">
-      <div className="m-2 p-1 flex gap-1">
-        <p>Location:</p>
-        <p className="text-red-600 font-semibold">{location}</p>
-      </div>
-
       <button className="w-[100px] h-9 rounded-lg bg-green-600 border border-black m-2 hover:bg-transparent hover:border-white">
-        Claim
+        Claim item
+      </button>
+       <button className="w-[100px] h-9 rounded-lg text-black bg-white border border-black m-2">
+        View details
       </button>
     </div>
   </div>
@@ -29,12 +29,12 @@ const FoundItemCard = ({ img, category, location }) => (
 
 // Data Array
 const items = [
-  { img: "/image/card1.jpg", category: "Electronic Devices", location: "A-Building" },
-  { img: "/image/card2.jpg", category: "BagPack", location: "C-Building" },
-  { img: "/image/card3.jpg", category: "Electronic Devices", location: "A-Building" },
-  { img: "/image/card5.jpg", category: "Identity Card", location: "Parking" },
-  { img: "/image/card4.jpg", category: "Keys", location: "Parking" },
-  { img: "/image/card6.jpg", category: "Garments", location: "Four Square" },
+  { img: "/image/card1.jpg", category: "Electronic Devices", location: "A-Building" ,status:"Claimed" ,date:"18/08/2024"},
+  { img: "/image/card2.jpg", category: "BagPack", location: "C-Building",status:"Returned",date:"18/08/2024" },
+  { img: "/image/card3.jpg", category: "Electronic Devices", location: "A-Building",status: "Found",date:"18/08/2024"},
+  { img: "/image/card5.jpg", category: "Identity Card", location: "Parking",status: "Found",date:"18/08/2024"},
+  { img: "/image/card4.jpg", category: "Keys", location: "Parking",status:"Claimed ",date:"18/08/2024"},
+  { img: "/image/card6.jpg", category: "Garments", location: "Four Square",status:"Returned",date:"18/08/2024"},
 ];
 
 // Main Section

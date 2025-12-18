@@ -10,7 +10,7 @@ const Footer = () => {
           <div className="md:col-span-1 space-y-3">
             <div className="flex items-center gap-3">
               <div>
-                <h2 className="text-lg font-semibold">BacktoOwner</h2>
+                <h2 className="text-lg font-semibold">CampusFind</h2>
                 <p className="text-xs text-gray-400">
                   Lost & found platform to reconnect people with their belongings.
                 </p>
@@ -51,7 +51,7 @@ const Footer = () => {
             <p className="text-sm">
               Email:
               <a href="mailto:raundalerutik@example.com" className="text-gray-200 hover:text-white hover:underline">
-                raundalerutik@example.com
+                raundalerutik@gmail.com
               </a>
             </p>
             <div className="flex gap-4 text-sm text-gray-400 justify-center">
@@ -65,7 +65,7 @@ const Footer = () => {
         {/* <!-- Bottom section --> */}
         <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-3 border-t border-white/5 pt-4">
           <p className="text-xs text-gray-500">
-            © 2025 BacktoOwner. All rights reserved.
+            © 2025 CampusFind. All rights reserved.
           </p>
           <div className="flex gap-4 text-xs text-gray-500">
             <a href="#" className="hover:text-gray-300">Privacy Policy</a>

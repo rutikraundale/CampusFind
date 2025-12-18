@@ -9,8 +9,8 @@ const Navbar = () => {
 
             
                 <div className='flex justify-center items-center m-2 p-2'>
-                    <img className='w-20 h-20 rounded-full object-cover md:w-[100px] md:h-[100px]' src="/image/backtoownerlogo.png" alt="" />
-                    <p className="text-white font-poppins text-xl font-bold m-2 p-2 md:text-3xl ">BackToOwner</p>
+
+                    <p className="text-white font-poppins text-xl font-bold m-2 p-2 md:text-4xl ">CampusFind.</p>
                 </div>
 
                 <div className='hidden md:flex w-full justify-between items-center ' >
@@ -22,14 +22,20 @@ const Navbar = () => {
                                 </Link>
 
                             </li>
-                            <li>
+                            
+                                                        <li>
                                 <Link className='mx-3.5 text-white font-poppins cursor-pointer text-[19px] hover:underline underline-offset-4' to={'/browse'}>
-                                    Browse Items
+                                    Browse item
                                 </Link>
                             </li>
                             <li>
                                 <Link className='mx-3.5 text-white font-poppins cursor-pointer text-[19px] hover:underline underline-offset-4' to={'/about'}>
-                                    About us
+                                    Report Found
+                                </Link>
+                            </li>
+                            <li>
+                                <Link className='mx-3.5 text-white font-poppins cursor-pointer text-[19px] hover:underline underline-offset-4' to={'/about'}>
+                                    Contact Us
                                 </Link>
                             </li>
 
@@ -39,7 +45,7 @@ const Navbar = () => {
                         <Link className='flex items-center justify-center mx-3.5 text-white text-[19px] font-poppins cursor-pointer  w-[100px] h-11 font-semibold m-2 p-2 hover:border border-white rounded-md' to={'/signin'}>
                             Sign in
                         </Link>
-                        <Link className='flex items-center justify-center mx-3.5 text-[19px] text-white font-poppins cursor-pointer  w-[100px] h-11 font-semibold m-2 p-2 hover:border border-white rounded-md' to={'/signup'}>
+                        <Link className='flex items-center  justify-center mx-3.5 text-[19px] text-black rounded-md bg-white font-poppins cursor-pointer  w-[100px] h-11 font-semibold m-2 p-2 ' to={'/signup'}>
                             Sign up
                         </Link>
                         
