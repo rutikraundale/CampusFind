@@ -29,7 +29,7 @@ const Navbar = () => {
                                 </Link>
                             </li>
                             <li>
-                                <Link className='mx-3.5 text-white font-poppins cursor-pointer text-[19px] hover:underline underline-offset-4' to={'/about'}>
+                                <Link className='mx-3.5 text-white font-poppins cursor-pointer text-[19px] hover:underline underline-offset-4' to={'/postitem'}>
                                     Report Found
                                 </Link>
                             </li>
@@ -42,7 +42,7 @@ const Navbar = () => {
                         </ul>
                     </div>
                     <div className=" flex w-auto h-auto m-2 p-2 justify-center items-center md:m-4 md:p-2 gap-4">
-                        <Link className='flex items-center justify-center mx-3.5 text-white text-[19px] font-poppins cursor-pointer  w-[100px] h-11 font-semibold m-2 p-2 hover:border border-white rounded-md' to={'/signin'}>
+                        <Link className='flex items-center justify-center mx-3.5 text-white text-[19px] font-poppins cursor-pointer  w-[100px] h-11 font-semibold m-2 p-2 border-1 border-white rounded-md' to={'/signin'}>
                             Sign in
                         </Link>
                         <Link className='flex items-center  justify-center mx-3.5 text-[19px] text-black rounded-md bg-white font-poppins cursor-pointer  w-[100px] h-11 font-semibold m-2 p-2 ' to={'/signup'}>
