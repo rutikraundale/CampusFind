@@ -17,22 +17,33 @@ const Home = () => {
               className='flex items-center justify-center w-[250px] h-auto m-4 p-1 text-base text-center bg-white text-black rounded-xl font-semibold  hover:bg-gray-400  md:p-2 md:m-4 md:w-[200px] md:h-11 md:text-xl cursor-pointer'>Report Found Item</button>
           </Link>
           <Link to={'./browse'}>
-          <button
-            className='flex items-center justify-center w-[250px] h-auto m-4 p-1 text-base text-center bg-black text-white  rounded-xl font-semibold border-2  transition-all  ease-in-out border-white hover:bg-gray-600  md:p-2 md:m-4 md:w-[200px] md:h-11 md:text-xl cursor-pointer'>Browse Lost Items</button>
+            <button
+              className='flex items-center justify-center w-[250px] h-auto m-4 p-1 text-base text-center bg-black text-white  rounded-xl font-semibold border-2  transition-all  ease-in-out border-white hover:bg-gray-600  md:p-2 md:m-4 md:w-[200px] md:h-11 md:text-xl cursor-pointer'>Browse Lost Items</button>
           </Link>
-          
+
         </div>
       </section>
 
       {/* Main section of cards */}
-      <div className='flex-col w-full h-auto  items-center md:flex-row'>
-        <div className='flex w-full h-auto'>
-            <Itemscard />
-        </div>
+
+      <div className='flex flex-col md:flex-row w-auto h-auto items-center gap-10'>
         
+        <Itemscard />
+        <div className='flex justify-center items-center'>
+          <Link to="/browse">
+            <button className="rounded-2xl bg-white w-32 h-10 p-2 cursor-pointer hover:bg-gray-200 ">
+             
+              See More
+              <i className="ri-arrow-right-long-line m-0.5 p-0.5"></i>
+            </button>
+          </Link>
+        </div>
       </div>
-      
+
+
     </div>
+
+
   )
 }
 

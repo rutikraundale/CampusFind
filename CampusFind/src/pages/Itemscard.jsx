@@ -7,31 +7,26 @@ export default function FoundItems() {
 
 
 
-    <div className="flex-col w-full h-auto md:flex-row">
+    <div className="flex-col w-auto h-auto md:flex-row">
       <div className="w-full flex text-xl gap-4 justify-start items-center m-4 p-2 text-white font-poppins font-semibold md:text-3xl ">
         <p>Latest found items.</p>
       </div>
 
-      <div className="w-full flex flex-row items-center gap-4">
-        {/* Grid section */}
-        <div className="grow">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 justify-items-center">
-            {items.map((item, idx) => (
-              <FoundItemCard key={idx} {...item} />
-            ))}
-          </div>
-        </div>
 
-        {/* Button section */}
-        <div className="flex items-center shrink-0 pr-6">
-          <Link to="/browse">
-            <button className="rounded-2xl bg-white w-32 h-10 p-2 cursor-pointer hover:bg-gray-200">
-              See More
-            </button>
-          </Link>
+      <div className="flex-col md:flex-row w-full h-auto items-center" >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 justify-items-center w-auto">
+          {items.map((item, idx) => (
+            <FoundItemCard key={idx} {...item} />
+          ))}
         </div>
+        
+
       </div>
+
     </div>
+
+
+
 
   );
 }
@@ -45,7 +40,7 @@ function FoundItemCard({ img, category, location, status, date }) {
     navigate('./itemdetails')
   }
   return (
-    <div className="w-auto md:w-[350px] m-4 rounded-lg flex flex-col shadow-md bg-gray-800 text-white">
+    <div className="w-full m-4 rounded-lg flex flex-col shadow-md bg-gray-800 text-white">
       <img src={img} alt={category} className="w-full h-[200px] object-cover rounded-t-xl" />
 
       <div className="m-2 p-1 flex-col flex-wrap items-center">
@@ -78,4 +73,4 @@ const items = [
 
 ];
 
-// Main Section
+
