@@ -1,19 +1,50 @@
-import React from 'react'
+import React,{useState} from 'react'
+import {useAuth} from "../context/Authcontext"
+import {useNavigate} from 'react-router-dom'
 
+const emailregex=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const Signin = () => {
+
+    const {login} =useAuth();
+
+    const navigate=useNavigate();
+    const [email,setEmail]=useState("");
+    const [password,setPassword]=useState("");
+
+    const handlelogin=async(e)=>{
+      e.preventDefault();
+
+      if(!emailregex.test(email)){
+        alert("Enter valid email format");
+        return;
+      }
+      if(password.length<8){
+        alert("Enter valid password");
+        return;
+      }
+      try {
+         await login(email,password);
+         navigate('/')
+        
+      } catch (error) {
+        alert("Invalid credentials!")
+      }
+    }
+
+
   return (
     <div className='w-full h-auto flex justify-center items-center'>
       <div className='flex flex-wrap flex-col w-[400px] md:w-[500px]  h-auto justify-center itmes-center bg-black  rounded-3xl gap-2 border-2 border-white'>
         <p className='text-xl mt-4 px-2 py-2 text-white flex justify-center items-center font-bold md:text-3xl'>Sign in</p>
-        <form action="" className='flex flex-col w-full h-auto justify-center items-center m-2 p-2 '>
+        <form onSubmit={handlelogin} className='flex flex-col w-full h-auto justify-center items-center m-2 p-2 '>
           <div className='flex w-full items-center justify-center'>
             <i className="flex text-white   ri-user-line"></i>
-            <input type="email" placeholder='Enter your email' className='w-auto h-auto text-white font-semibold flex m-4 p-2 justify-center items-center border-2 border-pink-400 ' />
+            <input type="email" placeholder='Enter your email' required value={email} onChange={(e)=>setEmail(e.target.value)} className='w-auto h-auto text-white font-semibold flex m-4 p-2 justify-center items-center border-2 border-pink-400 ' />
 
           </div>
           <div className='flex w-full items-center justify-center'>
               <i className="flex text-white  ri-lock-2-line"></i>
-              <input type="password" name="password" id="pass" className='w-auto  h-auto  text-white font-semibold flex m-4 p-2 justify-center items-center border-2 border-pink-400' placeholder='Enter Password' />
+              <input type="password" name="password" id="pass" required value={password} onChange={(e)=>setPassword(e.target.value)} className='w-auto  h-auto  text-white font-semibold flex m-4 p-2 justify-center items-center border-2 border-pink-400' placeholder='Enter Password' />
           </div>
 
           

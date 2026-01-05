@@ -1,59 +1,104 @@
 import React from 'react'
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect} from 'react'
+import { Link, NavLink ,useNavigate} from 'react-router-dom'
+import {useAuth} from '../context/Authcontext'
+
+
 const Navbar = () => {
-    const [isMenu, setIsmenu] = useState(false)
+    const [isMenu, setIsmenu] = useState(false);
+    const {loading,user,logout} =useAuth();
+    const navigate=useNavigate();
+   
+    if (loading) {
+        return null;
+    }
+    const handleLogout = async () => {
+        try {
+            await logout();
+            setUser(null);
+            navigate("/signin")
+        } catch (error) {
+            console.log(error);
+
+        }
+    }
+  
 
     return (
         <div className='h-auto w-full m-3 p-3 flex justify-between items-center'>
 
-            
-                <div className='flex justify-center items-center m-2 p-2'>
 
-                    <p className="text-white font-poppins text-xl font-bold m-2 p-2 md:text-4xl ">CampusFind.</p>
+            <div className='flex justify-center items-center m-2 p-2'>
+
+                <p className="text-white font-poppins text-xl font-bold m-2 p-2 md:text-4xl ">CampusFind.</p>
+            </div>
+
+            <div className='hidden md:flex w-full justify-between items-center ' >
+                <div className='flex w-full justify-center items-center md:m-4 md:p-2'>
+                    <ul className="md:flex hidden font-semibold gap-2">
+                        <li>
+                            <NavLink className={({ isActive }) =>
+
+                                `mx-3.5 text-white font-poppins cursor-pointer text-[19px] ${isActive ? "underline" : "hover:underline "}  underline-offset-4`
+                            } to={'/'}>
+                                Home
+                            </NavLink>
+
+                        </li>
+
+                        <li>
+                            <NavLink className={({ isActive }) =>
+
+                                `mx-3.5 text-white font-poppins cursor-pointer text-[19px] ${isActive ? "underline " : "hover:underline "} underline-offset-4`
+                            } to={'/browse'}>
+                                Browse item
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink className={({ isActive }) =>
+
+                                `mx-3.5 text-white font-poppins cursor-pointer text-[19px] ${isActive ? "underline " : "hover:underline"}  underline-offset-4`
+                            } to={'/postitem'}>
+                                Report Found
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink className={({ isActive }) =>
+                                `mx-3.5 text-white font-poppins cursor-pointer text-[19px] ${isActive ? "underline" : "hover:underline"} hover:underline underline-offset-4`
+                            } to={'/about'}>
+                                Contact Us
+                            </NavLink>
+                        </li>
+
+                    </ul>
                 </div>
+                {user ? (
 
-                <div className='hidden md:flex w-full justify-between items-center ' >
-                    <div className='flex w-full justify-center items-center md:m-4 md:p-2'>
-                        <ul className="md:flex hidden font-semibold gap-2">
-                            <li>
-                                <Link className='mx-3.5 text-white font-poppins cursor-pointer text-[19px] hover:underline underline-offset-4' to={'/'}>
-                                    Home
-                                </Link>
+                    <div className=' flex w-auto h-auto m-2 p-2 justify-center items-center md:m-4 md:p-2 gap-4'>
+                        <p className='flex w-auto text-white '>{user.email.trim()}</p>
+                        <button className='flex bg-white text-black w-32 h-10 text-xl cursor-pointer rounded-xl justify-center items-center  ' onClick={handleLogout} >Logout</button>
 
-                            </li>
-                            
-                                                        <li>
-                                <Link className='mx-3.5 text-white font-poppins cursor-pointer text-[19px] hover:underline underline-offset-4' to={'/browse'}>
-                                    Browse item
-                                </Link>
-                            </li>
-                            <li>
-                                <Link className='mx-3.5 text-white font-poppins cursor-pointer text-[19px] hover:underline underline-offset-4' to={'/postitem'}>
-                                    Report Found
-                                </Link>
-                            </li>
-                            <li>
-                                <Link className='mx-3.5 text-white font-poppins cursor-pointer text-[19px] hover:underline underline-offset-4' to={'/about'}>
-                                    Contact Us
-                                </Link>
-                            </li>
-
-                        </ul>
-                    </div>
-                    <div className=" flex w-auto h-auto m-2 p-2 justify-center items-center md:m-4 md:p-2 gap-4">
-                        <Link className='flex items-center justify-center mx-3.5 text-white text-[19px] font-poppins cursor-pointer  w-[100px] h-11 font-semibold m-2 p-2 border-1 border-white rounded-md' to={'/signin'}>
-                            Sign in
-                        </Link>
-                        <Link className='flex items-center  justify-center mx-3.5 text-[19px] text-black rounded-md bg-white font-poppins cursor-pointer  w-[100px] h-11 font-semibold m-2 p-2 ' to={'/signup'}>
-                            Sign up
-                        </Link>
-                        
                     </div>
 
-                </div>
 
-            
+                ) : (
+                    <>
+                        <div className=" flex w-auto h-auto m-2 p-2 justify-center items-center md:m-4 md:p-2 gap-4">
+                            <Link className='flex items-center justify-center mx-3.5 text-white text-[19px] font-poppins cursor-pointer  w-[100px] h-11 font-semibold m-2 p-2 border-2 border-white rounded-md' to={'/signin'}>
+                                Sign in
+                            </Link>
+                            <Link className='flex items-center  justify-center mx-3.5 text-[19px] text-black rounded-md bg-white font-poppins cursor-pointer  w-[100px] h-11 font-semibold m-2 p-2 ' to={'/signup'}>
+                                Sign up
+                            </Link>
+
+                        </div>
+                    </>
+                )}
+
+
+            </div>
+
+
 
 
 
@@ -92,15 +137,28 @@ const Navbar = () => {
 
                         </ul>
                     </div>
-                    <div className=" flex w-full h-auto m-2 p-2 justify-center items-center md:m-4 md:p-2 gap-4">
-                        <Link className='flex items-center justify-center mx-2.5 bg-white text-black text-[14px] font-poppins cursor-pointer  w-auto h-11 font-semibold m-2 p-2 hover:border border-white rounded-md' to={'/signin'}>
-                            Sign in
-                        </Link>
-                        <Link className='flex items-center justify-center mx-2.5 bg-white text-black text-[14px] font-poppins cursor-pointer  w-auto h-11 font-semibold m-2 p-2 hover:border border-white rounded-md' to={'/signup'}>
-                            Sign up
-                        </Link>
+                    {user ? (
 
-                    </div>
+                        <div className=' flex w-auto h-auto m-2 p-2 justify-center items-center md:m-4 md:p-2 gap-4'>
+                            <p className='flex w-auto text-white '>{user.email.trim()}</p>
+                            <button className='flex bg-white text-black w-32 h-10 text-xl cursor-pointer rounded-xl justify-center items-center  ' onClick={handleLogout} >Logout</button>
+
+                        </div>
+
+
+                    ) : (
+                        <>
+                            <div className=" flex w-auto h-auto m-2 p-2 justify-center items-center md:m-4 md:p-2 gap-4">
+                                <Link className='flex items-center justify-center mx-3.5 text-white text-[19px] font-poppins cursor-pointer  w-[100px] h-11 font-semibold m-2 p-2 border-2 border-white rounded-md' to={'/signin'}>
+                                    Sign in
+                                </Link>
+                                <Link className='flex items-center  justify-center mx-3.5 text-[19px] text-black rounded-md bg-white font-poppins cursor-pointer  w-[100px] h-11 font-semibold m-2 p-2 ' to={'/signup'}>
+                                    Sign up
+                                </Link>
+
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
         </div>
