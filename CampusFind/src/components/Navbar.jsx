@@ -15,7 +15,6 @@ const Navbar = () => {
     const handleLogout = async () => {
         try {
             await logout();
-            setUser(null);
             navigate("/signin")
         } catch (error) {
             console.log(error);
@@ -30,53 +29,15 @@ const Navbar = () => {
 
             <div className='flex justify-center items-center m-2 p-2'>
 
-                <p className="text-white font-poppins text-xl font-bold m-2 p-2 md:text-4xl ">CampusFind.</p>
+                <p className="text-white font-poppins text-xl font-bold m-2 p-2 md:text-5xl ">CampusFind.</p>
             </div>
 
-            <div className='hidden md:flex w-full justify-between items-center ' >
-                <div className='flex w-full justify-center items-center md:m-4 md:p-2'>
-                    <ul className="md:flex hidden font-semibold gap-2">
-                        <li>
-                            <NavLink className={({ isActive }) =>
-
-                                `mx-3.5 text-white font-poppins cursor-pointer text-[19px] ${isActive ? "underline" : "hover:underline "}  underline-offset-4`
-                            } to={'/'}>
-                                Home
-                            </NavLink>
-
-                        </li>
-
-                        <li>
-                            <NavLink className={({ isActive }) =>
-
-                                `mx-3.5 text-white font-poppins cursor-pointer text-[19px] ${isActive ? "underline " : "hover:underline "} underline-offset-4`
-                            } to={'/browse'}>
-                                Browse item
-                            </NavLink>
-                        </li>
-                        <li>
-                            <NavLink className={({ isActive }) =>
-
-                                `mx-3.5 text-white font-poppins cursor-pointer text-[19px] ${isActive ? "underline " : "hover:underline"}  underline-offset-4`
-                            } to={'/postitem'}>
-                                Report Found
-                            </NavLink>
-                        </li>
-                        <li>
-                            <NavLink className={({ isActive }) =>
-                                `mx-3.5 text-white font-poppins cursor-pointer text-[19px] ${isActive ? "underline" : "hover:underline"} hover:underline underline-offset-4`
-                            } to={'/about'}>
-                                Contact Us
-                            </NavLink>
-                        </li>
-
-                    </ul>
-                </div>
+            <div className='hidden md:flex w-auto justify-between items-center ' > 
                 {user ? (
 
                     <div className=' flex w-auto h-auto m-2 p-2 justify-center items-center md:m-4 md:p-2 gap-4'>
-                        <p className='flex w-auto text-white '>{user.email.trim()}</p>
-                        <button className='flex bg-white text-black w-32 h-10 text-xl cursor-pointer rounded-xl justify-center items-center  ' onClick={handleLogout} >Logout</button>
+                        <p className='flex w-auto text-white text-lg font-bold '>{user.email.trim()}</p>
+                        <button className='flex bg-white text-black w-30 h-10 text-xl cursor-pointer rounded-xl justify-center items-center  ' onClick={handleLogout} >Logout</button>
 
                     </div>
 
@@ -94,15 +55,9 @@ const Navbar = () => {
                         </div>
                     </>
                 )}
-
-
             </div>
 
-
-
-
-
-
+            {/* Hamburgur */}
             <div className='md:hidden flex justify-center items-center m-4 px-4 py-2'>
                 <i onClick={() => {
                     setIsmenu(!isMenu)

@@ -5,10 +5,10 @@ import { Link } from 'react-router-dom'
 const Home = () => {
   return (
     <div className='flex flex-col w-full h-auto overflow-auto justify-center items-center gap-4 mt-4 py-4'>
-      <h2 className=' text-white text-xl text-center italic md:text-3xl'><span className='  font-semibold underline underline-offset-3'>Lost something</span> on campus?
+      <h2 className=' text-white text-xl text-center italic font-bold md:text-3xl'><span className=''>Lost something</span> on campus?
       </h2>
-      <p className='flex  text-2xl md:text-4xl text-white  italic'>OR</p>
-      <h2 className=' text-white text-xl text-center italic md:text-3xl'><span className='  font-semibold underline underline-offset-3'>Found an item</span> and want to return it?</h2>
+      
+      <h2 className=' text-white text-xl text-center font-bold italic md:text-3xl'><span className=''>Found an item</span> and want to return it?</h2>
       <section className="w-full h-auto flex flex-wrap flex-col md:flex md:flex-row mt-4 py-2">
         <div
           className='w-full h-auto flex flex-col  justify-center items-center text-center flex-wrap gap-2 mx-4 p-2 md:flex md:flex-row md:p-2 md:m-4'>

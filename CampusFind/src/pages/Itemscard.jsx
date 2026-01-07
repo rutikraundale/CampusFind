@@ -14,13 +14,11 @@ export default function FoundItems() {
 
 
       <div className="flex-col md:flex-row w-full h-auto items-center" >
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 justify-items-center w-auto">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 justify-items-center w-auto">
           {items.map((item, idx) => (
             <FoundItemCard key={idx} {...item} />
           ))}
         </div>
-        
-
       </div>
 
     </div>

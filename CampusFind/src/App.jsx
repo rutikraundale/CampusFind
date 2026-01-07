@@ -1,50 +1,27 @@
-import React from 'react'
-import { lazy,Suspense } from 'react'
-import SearchItems from './pages/SearchItem'
-import About from './pages/About'
-import Home from './pages/Home'
-import Footer from './components/Footer'
-import { Routes, Route } from 'react-router-dom'
-import Signup from './pages/Signup'
-import Signin from './pages/Signin'
-import ItemDetail from './pages/ItemDetail'
-import PostItem from './pages/PostItem'
+import React, { Suspense, lazy } from "react";
+import { Routes, Route } from "react-router-dom";
+import { routes } from "./routes/Routes";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
-const Navbar=lazy(()=> import('./components/Navbar'))
-const Claimitem=lazy(()=>import('./pages/Claimitem'))
-const App = () => {
-  return (
-    <div
-      className="min-h-screen w-full relative bg-black"
-      style={{
-        background:
-          "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(34, 197, 94, 0.25), transparent 70%), #000000",
-           backgroundAttachment: "fixed",
-
-      }}
-    >
-      {/* Content */}
-      <div className="relative z-10 flex flex-col min-h-screen">
-        <Navbar />
+const App = () => (
+  <div className="min-h-screen w-full relative bg-black">
+    <div className="relative z-10 flex flex-col min-h-screen">
+      <Navbar />
+      <Suspense fallback={<div className="text-white">Loading...</div>}>
+        
         <main className="main px-4 sm:px-6 lg:px-8">
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/browse" element={<SearchItems />} />
-            <Route path="/signin" element={<Signin />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/itemdetails" element={<ItemDetail />} />
-            <Route path="/postitem" element={<PostItem />} />
-            <Route path="/claim" element={<Claimitem />} />
-            
-
+            {routes.map(({ path, element }) => (
+              <Route key={path} path={path} element={element} />
+            ))}
           </Routes>
         </main>
-        <Footer />
-      </div>
+        
+      </Suspense>
+      <Footer />
     </div>
-  )
-}
+  </div>
+);
 
-
-export default App
+export default App;
