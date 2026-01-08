@@ -22,6 +22,17 @@ const SearchItem = () => {
 
   const FoundItemCard = ({ item }) => {
     const navigate = useNavigate();
+    const isoString = item.$createdAt;
+    const date = new Date(isoString);
+
+    const formatted = date.toLocaleString("en-IN", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
 
     return (
       <div className="w-full rounded-lg shadow-md bg-gray-800 text-white">
@@ -38,14 +49,17 @@ const SearchItem = () => {
           <p><strong>Category:</strong> {item.category}</p>
           <p className="text-red-400"><strong>Location:</strong> {item.location}</p>
           <p><strong>Status:</strong> {item.status}</p>
+          <p><strong>Posted on:</strong> {formatted}</p>
         </div>
 
         <div className="flex justify-between p-3">
-          <Link to="./claim">
-            <button className="bg-green-600 px-3 py-1 rounded cursor-pointer ">Claim</button>
-          </Link>
+          
+            <button className="bg-green-600 px-3 py-1 rounded cursor-pointer "
+            onClick={()=> navigate(`/claim/${item.$id}`)}
+            >Claim</button>
+          
           <button
-            onClick={() => navigate( `/items/${item.$id}`)}
+            onClick={() => navigate(`/items/${item.$id}`)}
             className="bg-white text-black px-3 py-1 rounded cursor-pointer"
           >
             View

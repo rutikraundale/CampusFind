@@ -16,7 +16,7 @@ export const routes = [
   { path: "/browse", element: <SearchItems /> },
   { path: "/signin", element: <Signin /> },
   { path: "/signup", element: <Signup /> },
-  {path:"/claim",element:<ClaimItem/>},
+  {path:"/claim/:id",element:<ClaimItem/>},
   { path:"/items/:id", element: <ItemDetail /> },
   {
     path: "/postitem",
@@ -26,5 +26,5 @@ export const routes = [
       </ProtectedRoutes>
     ),
   },
-  { path: "/claim", element: <ClaimItem /> },
+  
 ];
