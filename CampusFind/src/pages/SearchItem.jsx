@@ -1,52 +1,31 @@
-import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { getFileView, getItems } from '../lib/getitem'
-import { storage } from '../lib/appwrite'
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { getFileView, getItems } from "../lib/getitem";
 
 const SearchItem = () => {
-
   const [items, setItems] = useState([]);
+  const [searchitem, setSearchitem] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadItems = async () => {
-      try {
-        const res = await getItems();
-        console.log("FULL DOCUMENT:", res.documents[0]);
-        setItems(res.documents);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    loadItems();
-  }, []);
-  if (loading) return <p>Loading items...</p>;
-  if (items.length === 0) return <p>No items found</p>;
-
-  console.log(
-    storage.getFileView(
-      import.meta.env.VITE_APPWRITE_BUCKET_ID,
-      items[0].imageid
-    )
-  );
-
-
-
-
-
-  function FoundItemCard({ item }) {
-
-
-    const navigate = useNavigate();
-    const handle = () => {
-      navigate('./itemdetails')
+  const loadItems = async (searchText = "") => {
+    setLoading(true);
+    try {
+      const res = await getItems(searchText);
+      setItems(res.documents);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const FoundItemCard = ({ item }) => {
+    const navigate = useNavigate();
+
     return (
-      <div className="w-full m-4 rounded-lg flex flex-col shadow-md bg-gray-800 text-white">
-        <div className="w-full h-[200px] overflow-hidden rounded-t-xl">
+      <div className="w-full rounded-lg shadow-md bg-gray-800 text-white">
+        <div className="h-[200px] overflow-hidden rounded-t-lg">
           <img
             src={getFileView(item.imageid)}
             alt={item.title}
@@ -54,67 +33,90 @@ const SearchItem = () => {
           />
         </div>
 
-        <div className="m-2 p-1 flex-col flex-wrap items-center">
-          <p className="text-base"><span className="text-white text-base">Title: </span>{item.title}</p>
-          <p className="text-base"><span className="text-white text-base">Category: </span>{item.category}</p>
-          <p className="text-red-600 font-semibold"><span className="text-white text-base">Location: </span> {item.location}</p>
-          <p className="text-white text-base"><span>Status: </span>{item.status} </p>
+        <div className="p-3">
+          <p><strong>Title:</strong> {item.title}</p>
+          <p><strong>Category:</strong> {item.category}</p>
+          <p className="text-red-400"><strong>Location:</strong> {item.location}</p>
+          <p><strong>Status:</strong> {item.status}</p>
         </div>
-        <div className="w-full flex flex-wrap justify-between items-center gap-2">
-          <Link to={'./claim'}><button className="w-[100px] h-9 rounded-lg bg-green-600 border border-black m-2 hover:bg-transparent hover:border-white">
-            Claim item
-          </button></Link>
-          <button onClick={() => {
-            handle()
-          }} className="w-[100px] h-9 rounded-lg text-black bg-white border border-black m-2 cursor-pointer">
-            View details
+
+        <div className="flex justify-between p-3">
+          <Link to="./claim">
+            <button className="bg-green-600 px-3 py-1 rounded cursor-pointer ">Claim</button>
+          </Link>
+          <button
+            onClick={() => navigate( `/items/${item.$id}`)}
+            className="bg-white text-black px-3 py-1 rounded cursor-pointer"
+          >
+            View
           </button>
         </div>
       </div>
     );
+  };
 
-  }
+
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadItems(searchitem);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchitem]);
+
+
+
+
 
   return (
     <div className="flex w-full h-auto justify-center items-center relative">
-      <header className="w-90 md:w-full flex flex-col h-auto md:flex-wrap justify-center text-center items-center">
-        <div className="w-full bg-[#0f0a1e] h-auto rounded-3xl flex justify-center items-center flex-col flex-wrap md:w-[890px] border border-white relative">
+      <header className="w-full flex flex-col items-center">
 
 
-          <Link to={'/'}>
-            <button className="absolute top-4 left-4 bg-white text-sm md:text-lg text-black font-semibold px-3 py-1 md:px-4 md:py-2 rounded-xl flex items-center cursor-pointer">
-              <i className="ri-arrow-left-line mr-1"></i> Back to home
+        <div className="w-full bg-[#0f0a1e] rounded-3xl flex flex-col items-center border border-white relative md:w-[890px]">
+          <Link to="/">
+            <button className="absolute top-4 left-4 bg-white text-black font-semibold px-4 py-2 rounded-xl">
+              Back to home
             </button>
           </Link>
 
-          <div className="flex justify-center items-center mt-12">
-            <p className="p-2 m-2 text-white text-xl font-brandScript md:px-2 md:m-4 md:text-3xl">
-              Find your lost things !!
-            </p>
-          </div>
+          <p className="mt-12 text-white text-3xl">Find your lost things !!</p>
 
-          <div>
-            <form className="flex flex-col w-full items-center p-4 m-4 md:flex-row md:flex-wrap" action="#">
-              <input
-                className="w-full h-7 m-2 p-2 md:w-[350px] md:h-10 bg-transparent rounded-md text-white placeholder:text-gray-400 border border-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
-                type="search"
-                placeholder="Search by keywords..."
-                name="search"
-                id="cat-search"
-              />
-            </form>
-          </div>
+
+          <input
+            className="w-full md:w-[350px] h-10 m-4 p-2 bg-transparent text-white border border-white rounded-md"
+            type="search"
+            value={searchitem}
+            onChange={(e) => setSearchitem(e.target.value)}
+            placeholder="Search by keywords..."
+          />
         </div>
-        <div className="flex-col md:flex-row w-full h-auto items-center" >
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 justify-items-center w-auto">
-            {items.map((item) => (
+
+        {/* Items Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+          {loading && (
+            <p className="col-span-full text-white text-center m-4 p-4 text-2xl font-bold">
+              Loading items...
+            </p>
+          )}
+
+          {!loading && items.length === 0 && (
+            <p className="col-span-full text-white text-center ">
+              No items found
+            </p>
+          )}
+
+          {!loading &&
+            items.length > 0 &&
+            items.map((item) => (
               <FoundItemCard key={item.$id} item={item} />
             ))}
-          </div>
         </div>
+
       </header>
     </div>
-  )
-}
+  );
+};
 
-export default SearchItem
+export default SearchItem;

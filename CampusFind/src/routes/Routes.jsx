@@ -16,7 +16,8 @@ export const routes = [
   { path: "/browse", element: <SearchItems /> },
   { path: "/signin", element: <Signin /> },
   { path: "/signup", element: <Signup /> },
-  { path: "/itemdetails", element: <ItemDetail /> },
+  {path:"/claim",element:<ClaimItem/>},
+  { path:"/items/:id", element: <ItemDetail /> },
   {
     path: "/postitem",
     element: (
