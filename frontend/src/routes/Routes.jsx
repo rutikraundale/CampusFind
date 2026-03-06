@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import ProtectedRoutes from "../components/ProtectedRoutes";
+// import ProtectedRoutes from "../components/ProtectedRoutes";
 
 const Home = lazy(() => import("../pages/Home"));
 const Contact = lazy(() => import("../pages/contact"));
@@ -21,9 +21,7 @@ export const routes = [
   {
     path: "/postitem",
     element: (
-      <ProtectedRoutes>
         <PostItem />
-      </ProtectedRoutes>
     ),
   },
   

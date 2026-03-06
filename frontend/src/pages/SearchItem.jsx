@@ -36,7 +36,7 @@ const SearchItem = () => {
 
     return (
       <div className="w-full rounded-lg shadow-md bg-gray-800 text-white">
-        <div className="h-[200px] overflow-hidden rounded-t-lg">
+        <div className="h-50 overflow-hidden rounded-t-lg">
           <img
             src={getFileView(item.imageid)}
             alt={item.title}
@@ -88,7 +88,7 @@ const SearchItem = () => {
       <header className="w-full flex flex-col items-center">
 
 
-        <div className="w-full bg-[#0f0a1e] rounded-3xl flex flex-col items-center border border-white relative md:w-[890px]">
+        <div className="w-full bg-[#0f0a1e] rounded-3xl flex flex-col items-center border border-white relative md:w-222.5">
           <Link to="/">
             <button className="absolute top-4 left-4 bg-white text-black font-semibold px-4 py-2 rounded-xl">
               Back to home
@@ -99,7 +99,7 @@ const SearchItem = () => {
 
 
           <input
-            className="w-full md:w-[350px] h-10 m-4 p-2 bg-transparent text-white border border-white rounded-md"
+            className="w-full md:w-87.5 h-10 m-4 p-2 bg-transparent text-white border border-white rounded-md"
             type="search"
             value={searchitem}
             onChange={(e) => setSearchitem(e.target.value)}

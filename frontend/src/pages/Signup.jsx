@@ -2,7 +2,7 @@ import React,{useState} from 'react'
 import {useNavigate} from 'react-router-dom'
 import { account } from '../lib/appwrite'
 import { ID } from 'appwrite';
-import {useAuth} from "../context/Authcontext"
+import {useAuth} from "../context/AuthContext"
 
 const emailregex=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordregex=/^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
@@ -37,6 +37,7 @@ const Signup = () => {
             await login(email,password);
             navigate("/");
         } catch (error) {
+            console.error("ERROR:",error)
           alert("Invalid Credentials")
         }
       }

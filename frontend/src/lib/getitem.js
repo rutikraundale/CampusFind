@@ -1,4 +1,4 @@
-import { databases, storage } from "./appwrite";
+import { databases, storage ,account} from "./appwrite";
 import { Query ,ID} from "appwrite";
 
 const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
