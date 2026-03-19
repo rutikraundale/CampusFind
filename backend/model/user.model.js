@@ -13,7 +13,12 @@ const userschema = new Schema(
             index: true,
 
         },
-
+        college_id: {
+            type: String,
+            required: true,
+            unique: true,
+            index: true,
+        },
         email: {
             type: String,
             required: true,
