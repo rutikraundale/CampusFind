@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import brcypt from "bcrypt";
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
@@ -50,20 +50,25 @@ const userschema = new Schema(
         emailVerificationExpiry: {
             type: Date,
         },
+        refereshToken:{
+            type:String
+        }
     },
     {
         timestamps: true,
     },
 );
 
-userschema.pre("save", async function (next) {
-    if (!this.isModified("password")) return next();
-    this.password = await brcypt.hash(this.password, 10);
-    next();
+userschema.pre("save", async function () {
+    if (!this.isModified("password")) return ;
+
+    this.password = await bcrypt.hash(this.password, 10);
+    
+
 });
 
 userschema.methods.isPasswordCorrect = async function (password) {
-    return await brcypt.compare(password, this.password);
+    return await bcrypt.compare(password, this.password);
 };
 
 userschema.methods.generateAccessToken = function () {
