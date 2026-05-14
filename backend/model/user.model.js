@@ -35,8 +35,8 @@ const userschema = new Schema(
             type: Boolean,
             default: false,
         },
-        refreshToken: {
-            type: String,
+        refereshToken:{
+            type:String
         },
         forgotPasswordToken: {
             type: String,
@@ -50,9 +50,6 @@ const userschema = new Schema(
         emailVerificationExpiry: {
             type: Date,
         },
-        refereshToken:{
-            type:String
-        }
     },
     {
         timestamps: true,

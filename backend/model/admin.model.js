@@ -13,10 +13,14 @@ const adminSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    refereshToken:{
+        type:String,
+        default:null
+    },
     role: {
         type: String,
-        enum: ["admin", "security"],
-        default: "security"
+        enum: ["admin"],
+        default: "admin"
     }
 }, { timestamps: true })
 
