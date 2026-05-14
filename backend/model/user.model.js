@@ -35,6 +35,11 @@ const userschema = new Schema(
             type: Boolean,
             default: false,
         },
+        role:{
+            type:String,
+            enum:["Student"],
+            default:"Student"
+        },
         refereshToken:{
             type:String
         },
@@ -74,6 +79,7 @@ userschema.methods.generateAccessToken = function () {
             _id: this._id,
             email: this.email,
             username: this.username,
+            role: this.role,
         },
         process.env.ACCESS_TOKEN_SECRET,
         {

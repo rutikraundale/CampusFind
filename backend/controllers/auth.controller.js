@@ -1,17 +1,19 @@
 import {asyncHandler} from "../utilities/async_handler.js";
 import { ApiError } from "../utilities/api_error.js";
 import {User} from "../model/user.model.js"
+import { Admin } from "../model/admin.model.js";
 import {ApiResponse} from "../utilities/api_response.js"
 
-const generateAccessAndRefereshToken=async(userid)=>{
+const generateAccessAndRefereshToken=async(userid, role)=>{
     try {
-        const user=await User.findById(userid);
+        const model = role === "admin" ? Admin : User;
+        const user=await model.findById(userid);
         if(!user){
             throw new ApiError(500,"Something went wrong!");
         }
         const AccessToken=user.generateAccessToken()
         const RefereshToken=user.generateRefreshToken()
-        user.refreshToken=RefereshToken
+        user.refereshToken=RefereshToken
         await user.save({validateBeforeSave:false});
         return {AccessToken,RefereshToken};
     } catch (error) {
@@ -21,7 +23,7 @@ const generateAccessAndRefereshToken=async(userid)=>{
 }
 
 const registerUser = asyncHandler(async (req, res) => {
-    const {username,college_id,email,password}=req.body;
+    const {username,college_id,email,password,role}=req.body;
     if([username,college_id,email,password].some((field)=>field?.trim()==="")){
         throw new ApiError(400,"Fields are missing")
     }
@@ -35,7 +37,8 @@ const registerUser = asyncHandler(async (req, res) => {
         username:username.toLowerCase(),
         college_id,
         email,
-        password
+        password,
+        role
     })
     const usercheck=await User.findById(user._id).select(
         "-password -refreshToken"
@@ -52,14 +55,25 @@ const registerUser = asyncHandler(async (req, res) => {
     )
 })
 const loginUser=asyncHandler(async(req,res)=>{
-    const {username,email,password}=req.body;
+    const {username,email,password,role}=req.body;
 
-    if(!username || !email){
-        throw new ApiError(400,"Username or Email is missing!");
+    if(!role){
+        throw new ApiError(400,"Role is missing!");
     }
-    const user= await User.findOne({
-        $or:[{username},{email}]
-    })
+
+    if((role === "Student" && !username && !email) || (role === "admin" && !email)){
+        throw new ApiError(400,"Credentials are missing!");
+    }
+
+    let user;
+    if(role === "admin"){
+        user = await Admin.findOne({email});
+    } else {
+        user= await User.findOne({
+            $or:[{username},{email}]
+        })
+    }
+
     if(!user){
         throw new ApiError(404,"User not found!");
     }
@@ -67,9 +81,10 @@ const loginUser=asyncHandler(async(req,res)=>{
     if(!isPasswordValid){
         throw new ApiError(401,"Incorrect Password!");
     }
-    const {AccessToken,RefereshToken}=await generateAccessAndRefereshToken(user._id);
+    const {AccessToken,RefereshToken}=await generateAccessAndRefereshToken(user._id, role);
 
-    const loggedInUser=await User.findById(user._id).select("-password -refereshToken");
+    const model = role === "admin" ? Admin : User;
+    const loggedInUser=await model.findById(user._id).select("-password -refereshToken");
     
     const options={
         httpOnly:true,
@@ -82,11 +97,12 @@ const loginUser=asyncHandler(async(req,res)=>{
     )
 })
 const logoutUser=asyncHandler(async(req,res)=>{
-    await User.findByIdAndUpdate(
+    const model = req.user.role === "admin" ? Admin : User;
+    await model.findByIdAndUpdate(
         req.user?._id,
         {
             $set:{
-                refreshToken:undefined
+                refereshToken:undefined
             }
         },
         {
