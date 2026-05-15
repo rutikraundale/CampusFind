@@ -16,9 +16,9 @@ const adminSchema = new mongoose.Schema({
         enum: ["admin"],
         default: "admin"
     },
-    refereshToken:{
-        type:String,
-        default:null
+    refreshToken: {
+        type: String,
+        default: null,
     }
 }, { timestamps: true })
 
@@ -50,12 +50,13 @@ adminSchema.methods.generateRefreshToken = function () {
     return jwt.sign(
         {
             _id: this._id,
+            role: this.role,
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
-            expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
         }
-    )
+    );
 }
 
 export const Admin = mongoose.model("Admin", adminSchema);

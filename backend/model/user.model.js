@@ -31,6 +31,18 @@ const userschema = new Schema(
             type: String,
             required: [true, "Password is required"],
         },
+        postedItems: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Item"
+            }
+        ],
+        claimedItems: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Item"
+            }
+        ],
         isEmailVerified: {
             type: Boolean,
             default: false,
@@ -40,8 +52,9 @@ const userschema = new Schema(
             enum:["Student"],
             default:"Student"
         },
-        refereshToken:{
-            type:String
+        refreshToken: {
+            type: String,
+            default: null,
         },
         forgotPasswordToken: {
             type: String,
@@ -92,12 +105,13 @@ userschema.methods.generateRefreshToken = function () {
     return jwt.sign(
         {
             _id: this._id,
+            role: this.role,
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
-            expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
         }
-    )
+    );
 }
 
 

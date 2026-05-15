@@ -3,7 +3,13 @@ import mongoose from "mongoose";
 const itemSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true
+        required: true,
+        trim: true,
+    },
+    category: {
+        type: String,
+        enum: ["electronics", "clothing", "accessories", "books", "documents", "other"],
+        default: "other",
     },
     description: {
         type: String,
@@ -24,7 +30,24 @@ const itemSchema = new mongoose.Schema({
     },
     postedBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
+        ref: "User",
+        required: true,
+    },
+    // Denormalised contact info so item pages display it without a populate()
+    contactEmail: {
+        type: String,
+        required: true,
+        lowercase: true,
+        trim: true,
+    },
+    contactPhone: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    isReturned: {
+        type: Boolean,
+        default: false
     },
     adminHandoverDate: { type: Date, default: Date.now }
 

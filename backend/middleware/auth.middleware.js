@@ -4,39 +4,50 @@ import { asyncHandler } from "../utilities/async_handler.js";
 import { User } from "../model/user.model.js";
 import { Admin } from "../model/admin.model.js";
 
+// ─── Helper ───────────────────────────────────────────────────────────────────
+const getModel = (role) => (role === "admin" ? Admin : User);
 
+// ─── Verify Access Token ──────────────────────────────────────────────────────
+// Reads token from cookie or Authorization header (Bearer <token>)
+export const verifyJWT = asyncHandler(async (req, _, next) => {
+    const token =
+        req.cookies?.accessToken ||
+        req.header("Authorization")?.replace("Bearer ", "");
 
-export const verifyJWT=asyncHandler(async(req,_,next)=>{
+    if (!token) throw new ApiError(401, "Unauthorized — no token provided");
+
+    let decoded;
     try {
-        const token=req.cookies?.AccessToken || req.header("Authorization")?.replace("Bearer ","");
-        if(!token){
-            throw new ApiError(401,"Unauthorized Access");
+        decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    } catch (err) {
+        if (err.name === "TokenExpiredError") {
+            throw new ApiError(401, "Access token expired");
         }
-        const decodeData=jwt.verify(token,process.env.ACCESS_TOKEN_SECRET);
-        
-        let user;
-        if(decodeData?.role === "admin"){
-            user = await Admin.findById(decodeData?._id).select("-password -refereshToken");
-        } else {
-            user = await User.findById(decodeData?._id).select("-password -refereshToken");
-        }
+        throw new ApiError(401, "Invalid access token");
+    }
 
-        if(!user){
-            throw new ApiError(401,"Invalid Access Token");
+    const model = getModel(decoded?.role);
+    const user = await model
+        .findById(decoded._id)
+        .select("-password -refreshToken");
+
+    if (!user) throw new ApiError(401, "User not found — token invalid");
+
+    req.user = user;
+    next();
+});
+
+// ─── Role-Based Access Control ────────────────────────────────────────────────
+// Usage: checkRole("admin")  /  checkRole("Student")  /  checkRole("admin","Student")
+export const checkRole = (...allowedRoles) =>
+    asyncHandler(async (req, _, next) => {
+        if (!req.user) throw new ApiError(401, "Not authenticated");
+
+        if (!allowedRoles.includes(req.user.role)) {
+            throw new ApiError(
+                403,
+                `Access denied — required role: ${allowedRoles.join(" or ")}`
+            );
         }
-        req.user=user;
         next();
-    } catch (error) {
-        throw error(error);
-    }
-})
-export const checkRole=(...allowedRoles)=>(asyncHandler(async(req,_,next)=>{
-    try {
-        if(!allowedRoles.includes(req.user.role)){
-            throw new ApiError(403,"Unauthorized Access:Role not allowed");
-        }
-        next();
-    } catch (error) {
-        throw error(error);
-    }
-}))
+    });
