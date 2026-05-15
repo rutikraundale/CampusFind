@@ -19,6 +19,14 @@ const adminSchema = new mongoose.Schema({
     refreshToken: {
         type: String,
         default: null,
+    },
+    complaints: {
+        type: [String],
+        default: []
+    },
+    feedbacks: {
+        type: [String],
+        default: []
     }
 }, { timestamps: true })
 

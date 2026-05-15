@@ -24,10 +24,6 @@ const claimSchema = new mongoose.Schema({
     claimedAt: {
         type: Date,
         default: Date.now
-    },
-    processByWhichAdmin: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Admin"
     }
 }, { timestamps: true })
 claimSchema.index({ opt_expiresAt: 1 }, { expireAfterSeconds: 3600 });

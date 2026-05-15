@@ -45,10 +45,6 @@ const itemSchema = new mongoose.Schema({
         required: true,
         trim: true,
     },
-    isReturned: {
-        type: Boolean,
-        default: false
-    },
     adminHandoverDate: { type: Date, default: Date.now }
 
 
