@@ -3,6 +3,7 @@ import { ApiError } from "../utilities/api_error.js";
 import { User } from "../model/user.model.js";
 import { Admin } from "../model/admin.model.js";
 import { ApiResponse } from "../utilities/api_response.js";
+import { sendVerificationEmail } from "../services/email.service.js";
 import jwt from "jsonwebtoken";
 
 // ─── Shared cookie options ────────────────────────────────────────────────────
@@ -38,13 +39,13 @@ const generateAndSaveTokens = async (userId, role) => {
 
 // ─── Register (Student only) ──────────────────────────────────────────────────
 const registerUser = asyncHandler(async (req, res) => {
-    const { username, college_id, email, password } = req.body;
+    const { username, college_id, email, password, mobile } = req.body;
 
-    if ([username, college_id, email, password].some((f) => !f || f.trim() === "")) {
+    if ([username, college_id, email, password, mobile].some((f) => !f || f.trim() === "")) {
         throw new ApiError(400, "All fields are required");
     }
 
-    const existingUser = await User.findOne({ $or: [{ college_id }, { email }] });
+    const existingUser = await User.findOne({ $or: [{ college_id }, { email }, { mobile }] });
     if (existingUser) throw new ApiError(409, "User already exists");
 
     const user = await User.create({
@@ -52,14 +53,26 @@ const registerUser = asyncHandler(async (req, res) => {
         college_id,
         email: email.toLowerCase(),
         password,
+        mobile,
     });
 
-    const created = await User.findById(user._id).select("-password -refreshToken");
+    const verificationToken = user.generateVerificationToken();
+    await user.save({ validateBeforeSave: false });
+
+    try {
+        await sendVerificationEmail(user.email, verificationToken);
+    } catch (error) {
+        console.error("Failed to send verification email:", error);
+        // We don't want to fail registration if email fails, 
+        // but we should inform the user or provide a way to resend.
+    }
+
+    const created = await User.findById(user._id).select("-password -refreshToken -emailVerificationToken -emailVerificationExpiry");
     if (!created) throw new ApiError(500, "Something went wrong during registration");
 
     return res
         .status(201)
-        .json(new ApiResponse(201, created, "User registered successfully"));
+        .json(new ApiResponse(201, created, "User registered successfully. Please verify your email."));
 });
 
 // ─── Login (Student + Admin) ──────────────────────────────────────────────────
@@ -161,4 +174,40 @@ const getCurrentUser = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, req.user, "Current user fetched"));
 });
 
-export { registerUser, loginUser, refreshAccessToken, logoutUser, getCurrentUser };
+// ─── Verify email with OTP ───────────────────────────────────────────────────
+const verifyEmail = asyncHandler(async (req, res) => {
+    const { token } = req.params;
+
+    if (!token) throw new ApiError(400, "Token is required");
+
+    const user = await User.findOne({
+        emailVerificationToken: token,
+        emailVerificationExpiry: { $gt: Date.now() },
+    });
+
+    if (!user) throw new ApiError(400, "Invalid or expired verification token");
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpiry = undefined;
+    await user.save();
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, {}, "Email verified successfully"));
+});
+
+
+const UpdateUserProfile=asyncHandler(async(req,res)=>{
+    const {username,college_id,email,password,mobile}=req.body;
+    const user=await User.findById(req.user._id);
+    if(!user) throw new ApiError(404,"User not found");
+    if(username) user.username=username;
+    if(college_id) user.college_id=college_id;
+    if(email) user.email=email;
+    if(password) user.password=password;
+    if(mobile) user.mobile=mobile;
+    await user.save({ validateBeforeSave: false });
+    return res.status(200).json(new ApiResponse(200,user,"User updated successfully"));
+})
+export { registerUser, loginUser, refreshAccessToken, logoutUser, getCurrentUser, UpdateUserProfile, verifyEmail };

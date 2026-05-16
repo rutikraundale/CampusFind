@@ -6,6 +6,7 @@ import { Claim } from "../model/claim.model.js";
 import { User } from "../model/user.model.js";
 import { Admin } from "../model/admin.model.js";
 import crypto from "crypto";
+import { sendClaimOtpEmail } from "../services/email.service.js";
 
 // ─── Helper: generate a 6-digit OTP ──────────────────────────────────────────
 const generateOTP = () =>
@@ -18,22 +19,27 @@ const generateOTP = () =>
  * In production: send OTP to student's email / phone.
  */
 const initiateClaim = asyncHandler(async (req, res) => {
-    const item = await Item.findById(req.params.itemId);
+    const {itemId,email}=req.params;
+    if(!itemId || !email){
+        throw new ApiError(400,"Item ID and email are required");
+    }
+    const item = await Item.findById(itemId);
+    const user=await User.findById(email);
     if (!item) throw new ApiError(404, "Item not found");
-
+    if (!user) throw new ApiError(404, "User not found");
     if (item.status !== "available") {
         throw new ApiError(400, `Item is already ${item.status}`);
     }
 
     // Prevent poster from claiming their own item
-    if (item.postedBy.toString() === req.user._id.toString()) {
+    if (item.postedBy.toString() === user._id.toString()) {
         throw new ApiError(400, "You cannot claim an item you posted");
     }
 
     // Cancel any existing unverified claim for this student + item
     await Claim.deleteMany({
         itemId: item._id,
-        student_id: req.user._id,
+        student_id: user._id,
         isVerified: false,
     });
 
@@ -42,23 +48,22 @@ const initiateClaim = asyncHandler(async (req, res) => {
 
     const claim = await Claim.create({
         itemId: item._id,
-        student_id: req.user._id,
+        student_id: user._id,
         otp_code,
         opt_expiresAt,
     });
 
+    await sendClaimOtpEmail(email,otp_code);
+
     // Mark item as pending
     item.status = "pending";
-    await item.save({ validateBeforeSave: false });
-
-    // TODO: send OTP to req.user.email / contactPhone via email/SMS service
+    await item.save();
 
     return res.status(201).json(
         new ApiResponse(201, {
             claimId: claim._id,
             itemId: item._id,
             message: "OTP generated. Show it to the admin to complete your claim.",
-            // Remove otp_code from response in production — send via email/SMS instead
             otp_code: process.env.NODE_ENV !== "production" ? otp_code : undefined,
             expiresAt: opt_expiresAt,
         }, "Claim initiated successfully")

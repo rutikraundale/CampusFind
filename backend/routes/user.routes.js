@@ -4,7 +4,9 @@ import {
     loginUser,
     refreshAccessToken,
     logoutUser,
-    getCurrentUser,
+    getCurrentUser,   
+    UpdateUserProfile,
+    verifyEmail
 } from "../controllers/auth.controller.js";
 import { verifyJWT, checkRole } from "../middleware/auth.middleware.js";
 
@@ -14,11 +16,12 @@ const router = Router();
 router.post("/register", registerUser);           // Student registration
 router.post("/login", loginUser);                 // Student + Admin login (role in body)
 router.post("/refresh", refreshAccessToken);      // Rotate refresh token
+router.get("/verify-email/:token", verifyEmail);  // Email verification
 
 // ─── Authenticated routes ─────────────────────────────────────────────────────
 router.post("/logout", verifyJWT, logoutUser);
 router.get("/me", verifyJWT, getCurrentUser);
-
+router.post("/update-profile", verifyJWT, UpdateUserProfile);
 // ─── Student-only routes ──────────────────────────────────────────────────────
 router.get(
     "/student/dashboard",

@@ -31,6 +31,15 @@ const userschema = new Schema(
             type: String,
             required: [true, "Password is required"],
         },
+        mobile:{
+            type:String,
+            required:true,
+            unique:true,
+        },
+        isEmailVerified:{
+            type:Boolean,
+            default:false,
+        },
         postedItems: [
             {
                 type: mongoose.Schema.Types.ObjectId,
@@ -43,10 +52,6 @@ const userschema = new Schema(
                 ref: "Item"
             }
         ],
-        isEmailVerified: {
-            type: Boolean,
-            default: false,
-        },
         role:{
             type:String,
             enum:["Student"],
@@ -112,6 +117,13 @@ userschema.methods.generateRefreshToken = function () {
             expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
         }
     );
+}
+
+userschema.methods.generateVerificationToken = function () {
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    this.emailVerificationToken = verificationToken;
+    this.emailVerificationExpiry = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+    return verificationToken;
 }
 
 
