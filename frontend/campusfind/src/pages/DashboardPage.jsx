@@ -1,174 +1,104 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { itemsAPI, claimsAPI } from "../api/services";
-import Spinner from "../components/Spinner";
-import ItemCard from "../components/ItemCard";
-import Toast from "../components/Toast";
-
-function StatCard({ label, value, icon, color }) {
-  return (
-    <div className={`bg-[#1e2130] border border-[#2a2d3e] rounded-2xl p-6 flex items-center gap-4 hover:border-[#6c63ff]/40 transition-all duration-300`}>
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${color}`}>
-        {icon}
-      </div>
-      <div>
-        <div className="text-2xl font-bold text-white">{value}</div>
-        <div className="text-sm text-[#8892a4]">{label}</div>
-      </div>
-    </div>
-  );
-}
+import { itemsAPI } from "../api/services";
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [myPosts, setMyPosts] = useState([]);
-  const [myClaims, setMyClaims] = useState([]);
+  const [recentItems, setRecentItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState(null);
 
   useEffect(() => {
-    Promise.all([
-      itemsAPI.getMyPosts(),
-      claimsAPI.getMyClaims(),
-    ]).then(([postsRes, claimsRes]) => {
-      setMyPosts(postsRes.data.data || []);
-      setMyClaims(claimsRes.data.data || []);
-    }).catch(() => {}).finally(() => setLoading(false));
+    itemsAPI.getAll({ limit: 0 })
+      .then((res) => {
+        setRecentItems(res.data.data || []);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  const handleDelete = async (id) => {
-    try {
-      await itemsAPI.delete(id);
-      setMyPosts((prev) => prev.filter((p) => p._id !== id));
-      setToast({ message: "Item deleted successfully", type: "success" });
-    } catch {
-      setToast({ message: "Failed to delete item", type: "error" });
-    }
-  };
-
-  const stats = [
-    { label: "Items Posted", value: myPosts.length, icon: "📤", color: "bg-[#6c63ff]/15" },
-    { label: "Available Items", value: myPosts.filter(p => p.status === "available").length, icon: "✅", color: "bg-emerald-500/15" },
-    { label: "Claims Made", value: myClaims.length, icon: "🏷️", color: "bg-amber-500/15" },
-    { label: "Items Claimed", value: myClaims.filter(c => c.isVerified).length, icon: "🎉", color: "bg-blue-500/15" },
-  ];
-
   return (
-    <div className="min-h-screen bg-[#0f1117] pt-20 pb-12 px-4">
-      {toast && <Toast {...toast} onClose={() => setToast(null)} />}
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 animate-fade-in">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6c63ff] to-[#a78bfa] flex items-center justify-center text-white font-bold">
-              {(user?.username || "U")[0].toUpperCase()}
+    <div style={{ paddingTop: '160px' }} className="pb-20 px-8 max-w-7xl mx-auto flex flex-col items-center text-center">
+      <h1 className="neo-hero-title text-white mb-6 animate-fade-in">
+        Lost Something on Campus?
+      </h1>
+      <p className="neo-hero-subtitle mb-16 max-w-2xl animate-fade-in" style={{ animationDelay: '0.1s' }}>
+        We're here to help you find and recover lost items securely and efficiently.
+      </p>
+
+      {/* Action Cards */}
+      <div className="flex flex-col lg:flex-row gap-8 w-full justify-center mb-24 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+        <Link to="/items/post" className="neo-action-card w-full lg:max-w-md h-36 flex items-center justify-between px-8 group">
+          <div className="flex items-center gap-6">
+            <div className="w-16 h-16 rounded-2xl neo-icon-container flex items-center justify-center text-[#D7DCE8] group-hover:text-white transition-colors">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">
-                Welcome back, <span className="text-[#6c63ff]">{user?.username}</span>!
-              </h1>
-              <p className="text-[#8892a4] text-sm">Here's what's happening with your items</p>
+            <span className="text-2xl font-medium text-white/90 group-hover:text-white transition-colors tracking-tight">Upload Item</span>
+          </div>
+          <svg className="w-6 h-6 text-white/30 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </Link>
+
+        <Link to="/items" className="neo-action-card w-full lg:max-w-md h-36 flex items-center justify-between px-8 group">
+          <div className="flex items-center gap-6">
+            <div className="w-16 h-16 rounded-2xl neo-icon-container flex items-center justify-center text-[#D7DCE8] group-hover:text-white transition-colors">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <span className="text-2xl font-medium text-white/90 group-hover:text-white transition-colors tracking-tight">Find Items</span>
+          </div>
+          <svg className="w-6 h-6 text-white/30 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </Link>
+      </div>
+
+      {/* Divider */}
+      <div className="w-full max-w-5xl mb-24">
+        <div className="neo-divider"></div>
+      </div>
+
+      {/* Bottom Sections */}
+      <div className="flex flex-col lg:flex-row gap-9 w-full max-w-5xl animate-fade-in text-left" style={{ animationDelay: '0.3s' }}>
+        
+        {/* Recent Items Section */}
+        <div className="neo-info-card flex-1 min-h-[360px] p-8 flex flex-col items-start relative">
+          <h2 className="neo-section-title text-white/90 mb-4">Recent Lost & Found Items</h2>
+          <div className="w-full h-px neo-divider mb-8"></div>
+          
+          <div className="flex-1 w-full flex flex-col items-center justify-center text-center">
+            <div className="mt-auto w-full flex justify-center">
+              <Link to="/items" className="inline-flex items-center justify-center h-12 px-8 neo-btn-browse text-white font-medium tracking-tight text-base transition-colors hover:text-[#4880FF]">
+                Browse Latest Items
+              </Link>
             </div>
           </div>
         </div>
 
-        {loading ? <Spinner size="lg" /> : (
-          <>
-            {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              {stats.map((s) => <StatCard key={s.label} {...s} />)}
-            </div>
-
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-              <Link
-                to="/items/post"
-                className="flex items-center gap-4 bg-[#1e2130] hover:bg-[#6c63ff]/10 border border-[#2a2d3e] hover:border-[#6c63ff]/50 rounded-2xl p-5 transition-all duration-300 group"
-              >
-                <div className="w-12 h-12 rounded-xl bg-[#6c63ff]/20 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📤</div>
-                <div>
-                  <div className="text-white font-semibold">Post Found Item</div>
-                  <div className="text-[#8892a4] text-sm">Report a new found item</div>
+        {/* How It Works Section */}
+        <div className="neo-info-card flex-1 min-h-[360px] p-8 flex flex-col items-start">
+          <h2 className="neo-section-title text-white/90 mb-4">How It Works</h2>
+          <div className="w-full h-px neo-divider mb-6"></div>
+          
+          <div className="w-full flex flex-col">
+            {[
+              { step: "1. Report a Lost Item", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg> },
+              { step: "2. Search for Items", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg> },
+              { step: "3. Claim via Email OTP", icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> }
+            ].map((item, idx) => (
+              <div key={idx} className="flex items-center gap-6 group h-16 border-b border-white/[0.06] last:border-0">
+                <div className="w-12 h-12 rounded-full neo-step-icon flex items-center justify-center text-[#D7DCE8] group-hover:text-white transition-colors">
+                  {item.icon}
                 </div>
-                <svg className="w-5 h-5 text-[#8892a4] ml-auto group-hover:text-[#6c63ff] group-hover:translate-x-1 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-              <Link
-                to="/items"
-                className="flex items-center gap-4 bg-[#1e2130] hover:bg-[#6c63ff]/10 border border-[#2a2d3e] hover:border-[#6c63ff]/50 rounded-2xl p-5 transition-all duration-300 group"
-              >
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🔍</div>
-                <div>
-                  <div className="text-white font-semibold">Search Items</div>
-                  <div className="text-[#8892a4] text-sm">Browse all lost & found</div>
-                </div>
-                <svg className="w-5 h-5 text-[#8892a4] ml-auto group-hover:text-[#6c63ff] group-hover:translate-x-1 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-            </div>
-
-            {/* My Posts */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-white font-semibold text-lg">My Posted Items</h2>
-                <Link to="/items/my-posts" className="text-sm text-[#6c63ff] hover:text-[#a78bfa] transition-colors">View all →</Link>
+                <span className="text-lg font-medium text-[#AEB6C7] group-hover:text-white transition-colors tracking-tight">{item.step}</span>
               </div>
-              {myPosts.length === 0 ? (
-                <div className="bg-[#1e2130] border border-[#2a2d3e] rounded-2xl p-10 text-center text-[#8892a4]">
-                  <div className="text-4xl mb-3">📭</div>
-                  <p>You haven't posted any items yet.</p>
-                  <Link to="/items/post" className="inline-block mt-4 text-sm text-[#6c63ff] hover:text-[#a78bfa] transition-colors">Post your first item →</Link>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {myPosts.slice(0, 3).map((item) => (
-                    <ItemCard key={item._id} item={item} showDelete onDelete={handleDelete} />
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* My Claims */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-white font-semibold text-lg">My Claims</h2>
-                <Link to="/claims/my-claims" className="text-sm text-[#6c63ff] hover:text-[#a78bfa] transition-colors">View all →</Link>
-              </div>
-              {myClaims.length === 0 ? (
-                <div className="bg-[#1e2130] border border-[#2a2d3e] rounded-2xl p-10 text-center text-[#8892a4]">
-                  <div className="text-4xl mb-3">🏷️</div>
-                  <p>You haven't claimed any items yet.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {myClaims.slice(0, 3).map((claim) => (
-                    <div key={claim._id} className="bg-[#1e2130] border border-[#2a2d3e] rounded-xl p-4 flex items-center gap-4 hover:border-[#6c63ff]/30 transition-all">
-                      <div className="w-10 h-10 rounded-lg bg-[#2a2d3e] flex items-center justify-center text-lg flex-shrink-0">
-                        {claim.itemId?.image ? (
-                          <img src={claim.itemId.image} className="w-full h-full object-cover rounded-lg" />
-                        ) : "📦"}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-white text-sm font-medium truncate">{claim.itemId?.title || "Unknown Item"}</p>
-                        <p className="text-[#8892a4] text-xs">{claim.itemId?.foundAt}</p>
-                      </div>
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border flex-shrink-0 ${
-                        claim.isVerified
-                          ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-                          : "bg-amber-500/15 text-amber-400 border-amber-500/30"
-                      }`}>
-                        {claim.isVerified ? "Verified" : "Pending"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </>
-        )}
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
