@@ -1,71 +1,171 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Search, Menu, X, MapPin, LogOut, User, LayoutDashboard } from 'lucide-react';
 
-export default function Navbar() {
-  const { user, logout } = useAuth();
+export default function Navbar({ user: propUser = null }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
   const navigate = useNavigate();
-  const [dropOpen, setDropOpen] = useState(false);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/login");
+  const localUserStr = localStorage.getItem('campusfind_user');
+  const localUser = localUserStr ? JSON.parse(localUserStr) : null;
+  const user = propUser || localUser;
+
+  const isActive = (path) => location.pathname === path;
+
+  const handleLogout = () => {
+    localStorage.removeItem('campusfind_user');
+    localStorage.removeItem('campusfind_token');
+    navigate('/login');
   };
 
+  const navLinks = user?.role === 'admin'
+    ? [
+        { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { to: '/admin/claims', label: 'Claims', icon: User },
+      ]
+    : [
+        { to: '/', label: 'Home' },
+        { to: '/search', label: 'Browse Items' },
+        { to: '/post-item', label: 'Report Item' },
+      ];
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 neo-nav" style={{ height: '88px' }}>
-      <div className="max-w-[1280px] mx-auto flex items-center justify-between transition-all duration-300 w-full h-full px-6 md:px-12">
+    <header style={{
+      position: 'sticky',
+      top: 0,
+      zIndex: 100,
+      borderBottom: '1px solid rgba(255,255,255,0.06)',
+      backdropFilter: 'blur(24px)',
+      WebkitBackdropFilter: 'blur(24px)',
+      background: 'rgba(10,11,20,0.85)',
+    }}>
+      <nav style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '68px' }}>
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-3 group">
-          <svg className="w-8 h-8 text-[#EAECEF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <span className="text-[1.8rem] md:text-[2rem] font-[600] tracking-[-0.03em] text-[#EAECEF]">CampusFind</span>
+        <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{
+            width: '36px', height: '36px',
+            background: 'linear-gradient(135deg, #6C63FF, #A78BFA)',
+            borderRadius: '10px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 16px rgba(108,99,255,0.4)',
+          }}>
+            <MapPin size={18} color="#fff" />
+          </div>
+          <span style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '1.2rem', color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+            Campus<span style={{ color: '#6C63FF' }}>Find</span>
+          </span>
         </Link>
 
-        <div className="flex items-center gap-4 md:gap-6">
-          {!user ? (
-            <>
-              <Link to="/login" className="hidden md:flex items-center justify-center text-[16px] font-medium text-white/90 neo-btn-login rounded-[14px] hover:text-white transition-colors" style={{ height: '52px', padding: '0 34px', minWidth: '110px' }}>
-                Login
-              </Link>
-              <Link to="/register" className="flex items-center justify-center text-[16px] font-medium text-white neo-btn-register rounded-[14px]" style={{ height: '52px', padding: '0 34px', minWidth: '130px' }}>
-                Register
-              </Link>
-            </>
-          ) : (
-            <div className="relative">
-              <button 
-                onClick={() => setDropOpen(!dropOpen)}
-                className="flex items-center gap-3 px-4 neo-btn-login rounded-xl group"
-                style={{ height: '52px' }}
-              >
-                <div className="w-8 h-8 rounded-full neo-icon-container flex items-center justify-center text-[#D7DCE8] font-bold text-sm">
-                  {user.username?.[0].toUpperCase()}
-                </div>
-                <span className="hidden md:block text-[#D7DCE8] font-medium group-hover:text-white transition-colors">{user.username}</span>
-                <svg className={`w-4 h-4 text-white/40 transition-transform ${dropOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
+        {/* Desktop Nav */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }} className="hidden-mobile">
+          {navLinks.map(link => (
+            <Link
+              key={link.to}
+              to={link.to}
+              style={{
+                padding: '8px 18px',
+                borderRadius: '9999px',
+                fontSize: '0.9rem',
+                fontWeight: 500,
+                textDecoration: 'none',
+                transition: 'all 0.25s ease',
+                color: isActive(link.to) ? '#F0F0FF' : '#9CA3C4',
+                background: isActive(link.to) ? 'rgba(108,99,255,0.2)' : 'transparent',
+                border: isActive(link.to) ? '1px solid rgba(108,99,255,0.4)' : '1px solid transparent',
+              }}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
 
-              {dropOpen && (
-                <div className="absolute right-0 mt-3 w-48 neo-info-card border border-white/10 overflow-hidden p-2 z-50 shadow-2xl">
-                  <Link to="/dashboard" className="block px-4 py-3 text-sm text-[#D7DCE8] hover:text-white hover:bg-white/5 rounded-xl transition-colors">Dashboard</Link>
-                  <Link to="/profile" className="block px-4 py-3 text-sm text-[#D7DCE8] hover:text-white hover:bg-white/5 rounded-xl transition-colors">Profile</Link>
-                  <div className="h-px bg-white/5 my-1"></div>
-                  <button 
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-3 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-colors"
-                  >
-                    Logout
-                  </button>
+        {/* Right Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} className="hidden-mobile">
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                padding: '6px 14px', borderRadius: '9999px',
+                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+              }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'linear-gradient(135deg,#6C63FF,#A78BFA)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <User size={14} color="#fff" />
                 </div>
-              )}
+                <span style={{ fontSize: '0.85rem', fontWeight: 500, color: '#F0F0FF' }}>{user.name}</span>
+              </div>
+              <button onClick={handleLogout} className="btn-secondary" style={{ padding: '8px 18px' }}>
+                <LogOut size={15} /> Logout
+              </button>
             </div>
+          ) : (
+            <>
+              <Link to="/login" className="btn-secondary" style={{ padding: '9px 22px' }}>Login</Link>
+              <Link to="/register" className="btn-primary" style={{ padding: '9px 22px' }}>Sign Up</Link>
+            </>
           )}
         </div>
-      </div>
-    </nav>
+
+        {/* Mobile Hamburger */}
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', color: '#F0F0FF', padding: '8px' }}
+          className="show-mobile"
+        >
+          {menuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </nav>
+
+      {/* Mobile Menu */}
+      {menuOpen && (
+        <div style={{
+          padding: '16px 24px 24px',
+          borderTop: '1px solid rgba(255,255,255,0.06)',
+          background: 'rgba(10,11,20,0.98)',
+          display: 'flex', flexDirection: 'column', gap: '8px',
+        }}>
+          {navLinks.map(link => (
+            <Link
+              key={link.to}
+              to={link.to}
+              onClick={() => setMenuOpen(false)}
+              style={{
+                padding: '12px 18px',
+                borderRadius: '10px',
+                fontSize: '0.95rem',
+                fontWeight: 500,
+                textDecoration: 'none',
+                color: isActive(link.to) ? '#F0F0FF' : '#9CA3C4',
+                background: isActive(link.to) ? 'rgba(108,99,255,0.15)' : 'transparent',
+              }}
+            >
+              {link.label}
+            </Link>
+          ))}
+          <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+            {user ? (
+              <button onClick={handleLogout} className="btn-secondary" style={{ flex: 1 }}>
+                <LogOut size={15} /> Logout
+              </button>
+            ) : (
+              <>
+                <Link to="/login" className="btn-secondary" style={{ flex: 1, textAlign: 'center' }}>Login</Link>
+                <Link to="/register" className="btn-primary" style={{ flex: 1, textAlign: 'center' }}>Sign Up</Link>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @media (max-width: 768px) {
+          .hidden-mobile { display: none !important; }
+          .show-mobile { display: flex !important; }
+        }
+        @media (min-width: 769px) {
+          .show-mobile { display: none !important; }
+        }
+      `}</style>
+    </header>
   );
 }
