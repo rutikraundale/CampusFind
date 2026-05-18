@@ -24,7 +24,7 @@ router.post(
 router.delete(
     "/:claimId/cancel",
     verifyJWT,
-    checkRole("Student"),
+    checkRole("admin", "Student"),
     cancelClaim
 );
 

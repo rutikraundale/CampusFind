@@ -8,7 +8,7 @@ const itemSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        enum: ["electronics", "clothing", "accessories", "books", "documents", "other"],
+        enum: ["electronics", "clothing", "accessories", "books", "documents", "wallet", "id card", "keys", "other"],
         default: "other",
     },
     description: {

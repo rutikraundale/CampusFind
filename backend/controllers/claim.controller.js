@@ -19,14 +19,16 @@ const generateOTP = () =>
  * In production: send OTP to student's email / phone.
  */
 const initiateClaim = asyncHandler(async (req, res) => {
-    const {itemId,email}=req.params;
-    if(!itemId || !email){
-        throw new ApiError(400,"Item ID and email are required");
+    const { itemId } = req.params;
+    const user = req.user;
+
+    if (!itemId) {
+        throw new ApiError(400, "Item ID is required");
     }
     const item = await Item.findById(itemId);
-    const user=await User.findById(email);
     if (!item) throw new ApiError(404, "Item not found");
-    if (!user) throw new ApiError(404, "User not found");
+    
+    const email = user.email;
     if (item.status !== "available") {
         throw new ApiError(400, `Item is already ${item.status}`);
     }
@@ -147,13 +149,13 @@ const getMyClaims = asyncHandler(async (req, res) => {
     );
 });
 
-// ─── DELETE /api/v1/claims/:claimId  (Student — cancel pending claim) ────────
+// ─── DELETE /api/v1/claims/:claimId  (Student or Admin — cancel/reject pending claim) ────────
 const cancelClaim = asyncHandler(async (req, res) => {
     const claim = await Claim.findById(req.params.claimId);
     if (!claim) throw new ApiError(404, "Claim not found");
 
-    if (claim.student_id.toString() !== req.user._id.toString()) {
-        throw new ApiError(403, "You can only cancel your own claims");
+    if (req.user.role !== "admin" && claim.student_id.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You do not have permission to cancel this claim");
     }
 
     if (claim.isVerified) {

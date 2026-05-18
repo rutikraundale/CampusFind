@@ -33,17 +33,20 @@ const deleteTempFile = (localPath) => {
  *
  * Auth: verifyJWT (Student only)
  */
-const postItem = asyncHandler(async (req, res) => {
+const postItem = asyncHandler(async (req, res,next) => {
     const localImagePath = req.file?.path;
 
     try {
+        console.log("POST /items received body:", req.body);
+        console.log("POST /items received file:", req.file);
+
         const {
             title,
             description,
             foundAt,
             category,
             contactPhone,
-        } = req.body;
+        } = req.body;   
 
         // ── Validation ────────────────────────────────────────────────────────
         const missing = [];
@@ -90,9 +93,8 @@ const postItem = asyncHandler(async (req, res) => {
             .json(new ApiResponse(201, item, "Item posted successfully"));
 
     } catch (error) {
-        // Clean up temp file on any error
         deleteTempFile(localImagePath);
-        throw error;
+        return next(error);
     }
 });
 

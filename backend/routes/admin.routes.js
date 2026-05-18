@@ -6,8 +6,12 @@ import {
     updateAdminFeedbackComplaints,
     getAdminFeedbackComplaints
 } from "../controllers/admin.controller.js";
+import registerAdmin from "../controllers/admin.js";
 
 const router = Router();
+
+// 🔥 No Auth Middleware Needed for the Super Admin Registration
+router.post('/register-admin', registerAdmin);
 
 router.use(verifyJWT, checkRole("admin"));
 

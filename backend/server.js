@@ -1,21 +1,15 @@
+import "dotenv/config";
 import express from "express";
-import dotenv from "dotenv";
-import cors from "cors";
 import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
+import { corsMiddleware } from "./middleware/cors.middleware.js";
 
-dotenv.config();
 connectDB();
 
 const app = express();
 
 // ─── Core middleware ──────────────────────────────────────────────────────────
-app.use(
-    cors({
-        origin: process.env.CORS_ORIGIN || "http://localhost:5173",
-        credentials: true, // required to accept cookies from frontend
-    })
-);
+app.use(corsMiddleware);
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
@@ -26,13 +20,14 @@ import userRouter from "./routes/user.routes.js";
 import itemRouter from "./routes/item.routes.js";
 import claimRouter from "./routes/claim.routes.js";
 import adminRouter from "./routes/admin.routes.js";
-import searchRouter from "./routes/search.routes.js";
+import searchRouter from "./routes/search.route.js";
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/items", itemRouter);
 app.use("/api/v1/claims", claimRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/search",searchRouter);
+app.use("/api/v1/admin",adminRouter);
 
 // ─── Global error handler ─────────────────────────────────────────────────────
 app.use((err, _req, res, _next) => {
