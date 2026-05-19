@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { itemsAPI, claimsAPI } from '../services/api';
+import { itemsAPI, claimsAPI, authAPI } from '../services/api';
 
 const CATEGORIES = [
   { id: 'All', label: 'All Categories' },
@@ -74,8 +74,69 @@ export default function SearchItemPage() {
   const [claimReason, setClaimReason] = useState('');
   const [isClaiming, setIsClaiming] = useState(false);
   const [claimSuccess, setClaimSuccess] = useState(false);
+  const [generatedClaimOtp, setGeneratedClaimOtp] = useState('');
   const [claimError, setClaimError] = useState('');
   const [showClaimForm, setShowClaimForm] = useState(false);
+
+  // OTP state hooks for unverified users trying to claim
+  const [showOtpVerification, setShowOtpVerification] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpError, setOtpError] = useState('');
+  const [otpSuccessMsg, setOtpSuccessMsg] = useState('');
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [resendingOtp, setResendingOtp] = useState(false);
+
+  const handleVerifyClaimOtp = async (e) => {
+    if (e) e.preventDefault();
+    if (!otpCode || otpCode.trim().length !== 6) {
+      setOtpError('Please enter a valid 6-digit OTP code.');
+      return;
+    }
+    setVerifyingOtp(true);
+    setOtpError('');
+    setOtpSuccessMsg('');
+    try {
+      const userStr = localStorage.getItem('campusfind_user');
+      const loggedInUser = userStr ? JSON.parse(userStr) : null;
+      if (!loggedInUser) throw new Error('User session not found.');
+
+      await authAPI.verifyOTP({ email: loggedInUser.email, otp: otpCode.trim() });
+      
+      // Update local storage to reflect email is verified
+      const updatedUser = { ...loggedInUser, isEmailVerified: true };
+      localStorage.setItem('campusfind_user', JSON.stringify(updatedUser));
+
+      setOtpSuccessMsg('Email verified successfully! Opening claim form...');
+      setTimeout(() => {
+        setShowOtpVerification(false);
+        setShowClaimForm(true);
+        setOtpSuccessMsg('');
+        setOtpCode('');
+      }, 1500);
+    } catch (err) {
+      setOtpError(err.message || 'OTP verification failed. Please try again.');
+    } finally {
+      setVerifyingOtp(false);
+    }
+  };
+
+  const handleResendClaimOtp = async () => {
+    setResendingOtp(true);
+    setOtpError('');
+    setOtpSuccessMsg('');
+    try {
+      const userStr = localStorage.getItem('campusfind_user');
+      const loggedInUser = userStr ? JSON.parse(userStr) : null;
+      if (!loggedInUser) throw new Error('User session not found.');
+
+      await authAPI.resendOTP({ email: loggedInUser.email });
+      setOtpSuccessMsg('A new OTP has been dispatched to your email.');
+    } catch (err) {
+      setOtpError(err.message || 'Failed to resend verification OTP.');
+    } finally {
+      setResendingOtp(false);
+    }
+  };
 
   // 1. Fetch live listings from backend on component mount
   const fetchAllListings = async () => {
@@ -146,16 +207,18 @@ export default function SearchItemPage() {
   };
 
   const handleFileClaim = async () => {
-    if (!claimReason.trim()) {
-      setClaimError('Please provide verification details to verify your ownership.');
-      return;
-    }
     setIsClaiming(true);
     setClaimError('');
     setClaimSuccess(false);
+    setGeneratedClaimOtp('');
     try {
       // live claims creation via claims API
-      await claimsAPI.create(selectedItem.id, { claimReason: claimReason.trim() });
+      const res = await claimsAPI.create(selectedItem.id);
+      
+      if (res.data && res.data.otp_code) {
+        setGeneratedClaimOtp(res.data.otp_code);
+      }
+      
       setClaimSuccess(true);
       setClaimReason('');
       setShowClaimForm(false);
@@ -173,7 +236,12 @@ export default function SearchItemPage() {
     setShowClaimForm(false);
     setClaimReason('');
     setClaimSuccess(false);
+    setGeneratedClaimOtp('');
     setClaimError('');
+    setShowOtpVerification(false);
+    setOtpCode('');
+    setOtpError('');
+    setOtpSuccessMsg('');
   };
 
   return (
@@ -1027,15 +1095,136 @@ export default function SearchItemPage() {
                 );
               }
 
+              if (showOtpVerification) {
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', width: '100%' }}>
+                    <div style={{
+                      padding: '10px 12px',
+                      background: 'rgba(108, 99, 255, 0.1)',
+                      border: '1px solid rgba(108, 99, 255, 0.25)',
+                      borderRadius: '12px',
+                      fontSize: '0.82rem',
+                      color: '#A78BFA',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Info size={16} />
+                      <span>Security Verification Required</span>
+                    </div>
+                    
+                    <p style={{ fontSize: '0.85rem', color: '#AEB6C7', margin: '4px 0', lineHeight: 1.5 }}>
+                      To protect lost items, claims are restricted to verified campus emails. Please enter the 6-digit code sent to <strong>{loggedInUser.email}</strong>.
+                    </p>
+
+                    <form onSubmit={handleVerifyClaimOtp} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div className="form-group">
+                        <input 
+                          type="text" 
+                          placeholder="Enter 6-digit security code"
+                          value={otpCode}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, '').substring(0, 6);
+                            setOtpCode(val);
+                            setOtpError('');
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '12px',
+                            background: 'rgba(5, 7, 14, 0.6)',
+                            border: '1px solid rgba(108, 99, 255, 0.3)',
+                            borderRadius: '12px',
+                            color: '#F2F4F8',
+                            fontSize: '1.1rem',
+                            fontWeight: 'bold',
+                            letterSpacing: '6px',
+                            textAlign: 'center',
+                            outline: 'none',
+                          }}
+                        />
+                      </div>
+
+                      {otpError && (
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', color: '#EF4444', fontSize: '0.78rem' }}>
+                          <AlertCircle size={14} />
+                          <span>{otpError}</span>
+                        </div>
+                      )}
+
+                      {otpSuccessMsg && (
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', color: '#10B981', fontSize: '0.78rem' }}>
+                          <CheckCircle size={14} />
+                          <span>{otpSuccessMsg}</span>
+                        </div>
+                      )}
+
+                      <div style={{ display: 'flex', gap: '12px', marginTop: '6px' }}>
+                        <button 
+                          type="submit"
+                          className="btn-primary" 
+                          style={{ flex: 1, padding: '12px 0' }}
+                          disabled={verifyingOtp}
+                        >
+                          {verifyingOtp ? 'Verifying...' : 'Verify Code'}
+                        </button>
+                        <button 
+                          type="button"
+                          className="btn-secondary" 
+                          style={{ flex: 1, padding: '12px 0' }}
+                          onClick={() => { setShowOtpVerification(false); setOtpError(''); setOtpSuccessMsg(''); }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+
+                    <div style={{ textAlign: 'center', marginTop: '4px' }}>
+                      <span style={{ fontSize: '0.85rem', color: '#5A5E7A' }}>
+                        Didn't receive the code?{' '}
+                        <button 
+                          type="button"
+                          onClick={handleResendClaimOtp}
+                          disabled={resendingOtp}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#6C63FF',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            padding: 0,
+                            fontSize: '0.85rem',
+                            textDecoration: 'underline'
+                          }}
+                        >
+                          {resendingOtp ? 'Resending...' : 'Resend OTP'}
+                        </button>
+                      </span>
+                    </div>
+                  </div>
+                );
+              }
+
               if (claimSuccess) {
                 return (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', textAlign: 'center' }}>
                     <div style={{ color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.95rem', fontWeight: 600 }}>
-                      <CheckCircle size={18} /> Claim Submitted Successfully!
+                      <CheckCircle size={18} /> Claim OTP Dispatched!
                     </div>
-                    <p style={{ fontSize: '0.85rem', color: '#AEB6C7', margin: 0 }}>
-                      Our administrators will review your claim verification statement. You can track this claim status inside your dashboard page.
+                    <p style={{ fontSize: '0.85rem', color: '#AEB6C7', margin: 0, lineHeight: 1.5 }}>
+                      A secure One-Time Password (OTP) has been dispatched to your email address. Show this OTP to the campus administrator to verify and finalize your claim.
                     </p>
+                    {generatedClaimOtp && (
+                      <div style={{
+                        background: 'rgba(108, 99, 255, 0.08)',
+                        border: '1px dashed rgba(108, 99, 255, 0.4)',
+                        borderRadius: '16px',
+                        padding: '16px',
+                        margin: '14px 0',
+                      }}>
+                        <span style={{ display: 'block', fontSize: '0.75rem', color: '#AEB6C7', marginBottom: '6px', fontWeight: 600, letterSpacing: '0.5px' }}>TESTING CODE (DEV ONLY)</span>
+                        <span style={{ fontSize: '1.6rem', fontWeight: '800', letterSpacing: '6px', color: '#6C63FF' }}>{generatedClaimOtp}</span>
+                      </div>
+                    )}
                     <button 
                       className="btn-secondary" 
                       style={{ padding: '12px 0', width: '100%', marginTop: '8px' }}
@@ -1066,40 +1255,35 @@ export default function SearchItemPage() {
 
               if (showClaimForm) {
                 return (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
-                    <label style={{ fontSize: '0.82rem', color: '#6C63FF', fontWeight: 700, letterSpacing: '0.5px' }}>
-                      VERIFICATION STATEMENT *
-                    </label>
-                    <textarea
-                      placeholder="Please describe identifying details (e.g. key markings, wallet contents, screen wallpapers, precise dimensions or serial codes) so our administrators can verify your ownership..."
-                      value={claimReason}
-                      onChange={(e) => { setClaimReason(e.target.value); setClaimError(''); }}
-                      style={{
-                        background: 'rgba(5, 7, 14, 0.6)',
-                        border: '1px solid rgba(108, 99, 255, 0.3)',
-                        borderRadius: '12px',
-                        color: '#F2F4F8',
-                        padding: '12px',
-                        fontSize: '0.88rem',
-                        minHeight: '80px',
-                        resize: 'vertical',
-                        outline: 'none',
-                        fontFamily: 'inherit'
-                      }}
-                    />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
+                    <div style={{
+                      padding: '14px',
+                      background: 'rgba(108, 99, 255, 0.05)',
+                      border: '1px solid rgba(108, 99, 255, 0.15)',
+                      borderRadius: '16px',
+                      color: '#AEB6C7',
+                      fontSize: '0.85rem',
+                      lineHeight: '1.5'
+                    }}>
+                      <div style={{ color: '#A78BFA', fontWeight: 700, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Info size={14} />
+                        Claim OTP Verification Flow
+                      </div>
+                      To complete this claim, we will generate a secure One-Time Password (OTP) and send it to your email. You must present this OTP to a campus administrator to verify ownership and collect your item.
+                    </div>
                     {claimError && (
                       <span style={{ color: '#EF4444', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <AlertCircle size={12} /> {claimError}
                       </span>
                     )}
-                    <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
+                    <div style={{ display: 'flex', gap: '12px' }}>
                       <button 
                         className="btn-primary" 
                         style={{ flex: 1, padding: '12px 0' }}
                         onClick={handleFileClaim}
                         disabled={isClaiming}
                       >
-                        {isClaiming ? 'Submitting request...' : 'Submit Claim'}
+                        {isClaiming ? 'Sending OTP...' : 'Send Claim OTP'}
                       </button>
                       <button 
                         className="btn-secondary" 
@@ -1126,7 +1310,22 @@ export default function SearchItemPage() {
                       <button 
                         className="btn-primary" 
                         style={{ flex: 1, padding: '12px 0' }}
-                        onClick={() => setShowClaimForm(true)}
+                        onClick={async () => {
+                          if (!loggedInUser.isEmailVerified) {
+                            setShowOtpVerification(true);
+                            setOtpError('');
+                            setOtpSuccessMsg('Sending verification OTP...');
+                            try {
+                              await authAPI.resendOTP({ email: loggedInUser.email });
+                              setOtpSuccessMsg('A 6-digit verification code has been dispatched to your email.');
+                            } catch (err) {
+                              setOtpError(err.message || 'Failed to dispatch OTP email.');
+                              setOtpSuccessMsg('');
+                            }
+                          } else {
+                            setShowClaimForm(true);
+                          }
+                        }}
                       >
                         File Ownership Claim
                       </button>

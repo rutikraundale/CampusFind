@@ -55,6 +55,18 @@ export const authAPI = {
   register: (userData) => API.post("/users/register", userData),
 
   /**
+   * Verify registration email with OTP
+   * @param {Object} otpData { email, otp }
+   */
+  verifyOTP: (otpData) => API.post("/users/verify-otp", otpData),
+
+  /**
+   * Resend registration OTP
+   * @param {Object} resendData { email }
+   */
+  resendOTP: (resendData) => API.post("/users/resend-otp", resendData),
+
+  /**
    * Authenticate a user session (Student or Admin)
    * @param {Object} credentials { email, password, role }
    */

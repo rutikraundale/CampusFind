@@ -28,6 +28,7 @@ export default function Navbar({ user: propUser = null }) {
         { to: '/', label: 'Home' },
         { to: '/search', label: 'Browse Items' },
         { to: '/post-item', label: 'Report Item' },
+        ...(user ? [{ to: '/profile', label: 'My Profile' }] : []),
       ];
 
   return (

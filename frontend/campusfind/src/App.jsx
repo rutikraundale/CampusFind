@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import SearchItemPage from './pages/SearchItemPage';
 import PostItemPage from './pages/PostItemPage';
+import ProfilePage from './pages/ProfilePage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminClaimListPage from './pages/AdminClaimListPage';
 import AdminClaimVerificationPage from './pages/AdminClaimVerificationPage';
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/search" element={<SearchItemPage />} />
         <Route path="/post-item" element={<PostItemPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
 
         {/* Admin Routes */}
         <Route path="/admin/dashboard" element={<ProtectedAdminRoute><AdminDashboardPage /></ProtectedAdminRoute>} />
