@@ -6,7 +6,9 @@ import {
     logoutUser,
     getCurrentUser,   
     UpdateUserProfile,
-    verifyEmail
+    verifyEmail,
+    verifyOTP,
+    resendOTP
 } from "../controllers/auth.controller.js";
 import { verifyJWT, checkRole } from "../middleware/auth.middleware.js";
 
@@ -14,9 +16,11 @@ const router = Router();
 
 // ─── Public routes ────────────────────────────────────────────────────────────
 router.post("/register", registerUser);           // Student registration
+router.post("/verify-otp", verifyOTP);            // Verify email OTP
+router.post("/resend-otp", resendOTP);            // Resend email OTP
 router.post("/login", loginUser);                 // Student + Admin login (role in body)
 router.post("/refresh", refreshAccessToken);      // Rotate refresh token
-router.get("/verify-email/:token", verifyEmail);  // Email verification
+router.get("/verify-email/:token", verifyEmail);  // Email verification (fallback URL link)
 
 // ─── Authenticated routes ─────────────────────────────────────────────────────
 router.post("/logout", verifyJWT, logoutUser);

@@ -55,7 +55,14 @@ const initiateClaim = asyncHandler(async (req, res) => {
         opt_expiresAt,
     });
 
-    await sendClaimOtpEmail(email,otp_code);
+    try {
+        await sendClaimOtpEmail(email, otp_code);
+    } catch (error) {
+        console.error("Failed to send claim OTP email:", error);
+        // Clean up: delete the claim we just created to keep the database consistent
+        await Claim.findByIdAndDelete(claim._id);
+        throw new ApiError(500, "Failed to send claim OTP email. Please try again later.");
+    }
 
     // Mark item as pending
     item.status = "pending";

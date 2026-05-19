@@ -3,8 +3,9 @@ import { ApiError } from "../utilities/api_error.js";
 import { User } from "../model/user.model.js";
 import { Admin } from "../model/admin.model.js";
 import { ApiResponse } from "../utilities/api_response.js";
-import { sendVerificationEmail } from "../services/email.service.js";
+import { sendVerificationEmail, sendVerificationOtpEmail } from "../services/email.service.js";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 // ─── Shared cookie options ────────────────────────────────────────────────────
 const cookieOptions = {
@@ -45,7 +46,7 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "All fields are required");
     }
 
-    const existingUser = await User.findOne({ $or: [{ college_id }, { email }, { mobile }] });
+    const existingUser = await User.findOne({ $or: [{ college_id }, { email }, { mobile }, { username }] });
     if (existingUser) throw new ApiError(409, "User already exists");
 
     const user = await User.create({
@@ -54,17 +55,18 @@ const registerUser = asyncHandler(async (req, res) => {
         email: email.toLowerCase(),
         password,
         mobile,
+        isEmailVerified: false,
     });
 
-    const verificationToken = user.generateVerificationToken();
+    const otp = crypto.randomInt(100000, 999999).toString();
+    user.emailVerificationToken = otp;
+    user.emailVerificationExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
     await user.save({ validateBeforeSave: false });
 
     try {
-        await sendVerificationEmail(user.email, verificationToken);
+        await sendVerificationOtpEmail(user.email, otp);
     } catch (error) {
-        console.error("Failed to send verification email:", error);
-        // We don't want to fail registration if email fails, 
-        // but we should inform the user or provide a way to resend.
+        console.error("Failed to send verification OTP email:", error);
     }
 
     const created = await User.findById(user._id).select("-password -refreshToken -emailVerificationToken -emailVerificationExpiry");
@@ -72,8 +74,9 @@ const registerUser = asyncHandler(async (req, res) => {
 
     return res
         .status(201)
-        .json(new ApiResponse(201, created, "User registered successfully. Please verify your email."));
+        .json(new ApiResponse(201, created, "User registered successfully. Please verify your email with the OTP sent."));
 });
+
 
 // ─── Login (Student + Admin) ──────────────────────────────────────────────────
 const loginUser = asyncHandler(async (req, res) => {
@@ -197,6 +200,68 @@ const verifyEmail = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, {}, "Email verified successfully"));
 });
 
+const verifyOTP = asyncHandler(async (req, res) => {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+        throw new ApiError(400, "Email and OTP code are required");
+    }
+
+    const user = await User.findOne({
+        email: email.toLowerCase(),
+        emailVerificationToken: otp.trim(),
+        emailVerificationExpiry: { $gt: Date.now() },
+    });
+
+    if (!user) {
+        throw new ApiError(400, "Invalid or expired OTP");
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpiry = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    const { accessToken, refreshToken } = await generateAndSaveTokens(user._id, "Student");
+    const verifiedUser = await User.findById(user._id).select("-password -refreshToken");
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, cookieOptions)
+        .cookie("refreshToken", refreshToken, cookieOptions)
+        .json(new ApiResponse(200, { user: verifiedUser, accessToken }, "Email verified successfully"));
+});
+
+const resendOTP = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        throw new ApiError(400, "Email is required");
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) throw new ApiError(404, "User not found");
+
+    if (user.isEmailVerified) {
+        throw new ApiError(400, "Email is already verified");
+    }
+
+    const otp = crypto.randomInt(100000, 999999).toString();
+    user.emailVerificationToken = otp;
+    user.emailVerificationExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    await user.save({ validateBeforeSave: false });
+
+    try {
+        await sendVerificationOtpEmail(user.email, otp);
+    } catch (error) {
+        console.error("Failed to send verification OTP email during resend:", error);
+        throw new ApiError(500, "Failed to send OTP email. Please try again.");
+    }
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, {}, "OTP resent successfully"));
+});
 
 const UpdateUserProfile=asyncHandler(async(req,res)=>{
     const {username,college_id,email,password,mobile}=req.body;
@@ -210,4 +275,4 @@ const UpdateUserProfile=asyncHandler(async(req,res)=>{
     await user.save({ validateBeforeSave: false });
     return res.status(200).json(new ApiResponse(200,user,"User updated successfully"));
 })
-export { registerUser, loginUser, refreshAccessToken, logoutUser, getCurrentUser, UpdateUserProfile, verifyEmail };
+export { registerUser, loginUser, refreshAccessToken, logoutUser, getCurrentUser, UpdateUserProfile, verifyEmail, verifyOTP, resendOTP };

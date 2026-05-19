@@ -21,6 +21,10 @@ const claimSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    processByWhichAdmin: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Admin"
+    },
     claimedAt: {
         type: Date,
         default: Date.now
