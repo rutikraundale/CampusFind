@@ -249,31 +249,8 @@ RBAC Middleware verifies user role
 Authorized Controller executes request
 ```
 
-### Authorization Example
 
-```text
-Student Request
-      ↓
-JWT Verification
-      ↓
-Role Verification
-      ↓
-Student Controller
-      ↓
-Allowed Operation
-```
 
-```text
-Admin Request
-      ↓
-JWT Verification
-      ↓
-Admin Role Verification
-      ↓
-Admin Controller
-      ↓
-Administrative Operation
-```
 
 ---
 
@@ -455,41 +432,6 @@ CampusFind/
 
 ---
 
-# 🔄 Request Processing Flow
-
-All protected requests follow a security pipeline:
-
-```mermaid
-flowchart LR
-
-    CLIENT["React Client"]
-
-    REQUEST["HTTP Request"]
-
-    ROUTE["Express Route"]
-
-    CORS["CORS Middleware"]
-
-    JWT["JWT Verification"]
-
-    RBAC["Role Verification"]
-
-    CONTROLLER["Controller"]
-
-    DATABASE[("MongoDB")]
-
-    SERVICE["External Service"]
-
-    CLIENT --> REQUEST
-    REQUEST --> ROUTE
-    ROUTE --> CORS
-    CORS --> JWT
-    JWT --> RBAC
-    RBAC --> CONTROLLER
-
-    CONTROLLER --> DATABASE
-    CONTROLLER --> SERVICE
-```
 
 ---
 
@@ -598,7 +540,7 @@ CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 ```
 
-> Never commit `.env` files or secret credentials to a public repository.
+
 
 ---
 
