@@ -1,0 +1,578 @@
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+/* ============================
+   DESIGN TOKENS — FROM DESIGN.md
+   Theme: Light / Warm Parchment Editorial
+============================= */
+:root {
+  /* Colors */
+  --color-parchment:        #f7f7f4; /* Canvas / Page background */
+  --color-bone:             #f2f1ed; /* Card surface & elevated containers */
+  --color-linen:            #e6e5e0; /* Light neutral action fill / secondary buttons */
+  --color-stone:            #cdcdc9; /* Hairline borders & dividers */
+  --color-mist:             #a1a19f; /* Captions & helper text */
+  --color-driftwood:        #84847e; /* Secondary body text */
+  --color-ash:              #7a7974; /* Subdued labels & icon fills */
+  --color-ink:              #26251e; /* Primary text & primary action button */
+  --color-ember:            #f54e00; /* Orange text accent for links & tags */
+  --color-amber:            #c08532; /* Warm action fill */
+  --color-forest:           #34785c; /* Green action color */
+  --color-verdant:          #1f8a65; /* Green text accent */
+  --color-crimson:          #cf2d56; /* Red text accent */
+
+  /* Semantic Theme Aliases */
+  --color-bg:               var(--color-parchment);
+  --color-bg-deep:          var(--color-bone);
+  --color-surface:          var(--color-bone);
+  --color-surface-elevated: var(--color-linen);
+  --color-surface-hover:    #ecebe6;
+
+  --color-border:           var(--color-stone);
+  --color-border-strong:    #b5b5b0;
+  --color-border-subtle:    rgba(38, 37, 30, 0.08);
+
+  --color-text-primary:     var(--color-ink);
+  --color-text-heading:     var(--color-ink);
+  --color-text-secondary:   var(--color-driftwood);
+  --color-text-muted:       var(--color-ash);
+  --color-text-disabled:    var(--color-mist);
+
+  /* Typography */
+  --font-cursorgothic:      'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-eb-garamond:       'EB Garamond', Georgia, serif;
+  --font-berkeleymono:      'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --font-body:              var(--font-cursorgothic);
+  --font-display:           var(--font-cursorgothic);
+  --font-serif:             var(--font-eb-garamond);
+  --font-mono:              var(--font-berkeleymono);
+
+  /* Radii — 4px sharp throughout as mandated by Design.md */
+  --radius-sm:              2px;
+  --radius-md:              4px;
+  --radius-lg:              8px;
+  --radius-xl:              8px;
+  --radius-full:            4px;
+  --radius-cards:           4px;
+  --radius-tiles:           4px;
+  --radius-inputs:          4px;
+  --radius-modals:          8px;
+  --radius-buttons:         4px;
+
+  /* Spacing */
+  --spacing-4:              4px;
+  --spacing-8:              8px;
+  --spacing-12:             12px;
+  --spacing-16:             16px;
+  --spacing-20:             20px;
+  --spacing-24:             24px;
+  --spacing-32:             32px;
+  --spacing-48:             48px;
+  --spacing-56:             56px;
+  --spacing-64:             64px;
+
+  /* Shadows */
+  --shadow-subtle:          rgb(235, 234, 229) 0px 0px 0px 2px;
+  --shadow-warm:            0 1px 3px rgba(38, 37, 30, 0.05), 0 1px 2px rgba(38, 37, 30, 0.03);
+  --shadow-xl:              rgba(0, 0, 0, 0.08) 0px 24px 60px 0px, rgba(0, 0, 0, 0.04) 0px 12px 28px 0px, rgba(38, 37, 30, 0.05) 0px 0px 0px 1px;
+
+  /* Transitions */
+  --transition:             150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@theme {
+  --color-parchment: #f7f7f4;
+  --color-bone: #f2f1ed;
+  --color-linen: #e6e5e0;
+  --color-stone: #cdcdc9;
+  --color-mist: #a1a19f;
+  --color-driftwood: #84847e;
+  --color-ash: #7a7974;
+  --color-ink: #26251e;
+  --color-ember: #f54e00;
+  --color-amber: #c08532;
+  --color-forest: #34785c;
+  --color-verdant: #1f8a65;
+  --color-crimson: #cf2d56;
+
+  --font-cursorgothic: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-eb-garamond: 'EB Garamond', Georgia, serif;
+  --font-berkeleymono: 'Roboto Mono', ui-monospace, monospace;
+}
+
+/* ============================
+   GLOBAL RESETS & BASE
+============================= */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--color-parchment);
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-parchment);
+  color: var(--color-ink);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: #8BC4F8;
+  color: #26251e;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-parchment); }
+::-webkit-scrollbar-thumb { background: var(--color-stone); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-driftwood); }
+
+/* ============================
+   PAGE WRAPPER & CONTAINER
+============================= */
+.page-wrapper {
+  position: relative;
+  min-height: 100vh;
+  background-color: var(--color-parchment);
+  color: var(--color-ink);
+}
+
+.page-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ============================
+   HEADINGS & EDITORIAL TYPOGRAPHY
+============================= */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 400; /* Design.md: whisper-weight 400 headlines */
+  color: var(--color-ink);
+  letter-spacing: -0.015em;
+}
+
+.font-editorial {
+  font-family: var(--font-serif);
+}
+
+.font-mono-tag {
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+
+/* ============================
+   BUTTONS (Design.md Specs)
+============================= */
+/* Primary Filled Button: #26251e background, #f7f7f4 text, 4px radius */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--color-ink);
+  color: var(--color-parchment);
+  font-family: var(--font-cursorgothic);
+  font-weight: 400;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--color-ink);
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.btn-primary:hover {
+  background: #3d3c34;
+  border-color: #3d3c34;
+  color: var(--color-parchment);
+}
+
+.btn-primary:active {
+  background: #1a1914;
+}
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Secondary Filled Button: #e6e5e0 background, #26251e text, 4px radius */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--color-linen);
+  color: var(--color-ink);
+  font-family: var(--font-cursorgothic);
+  font-weight: 400;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--color-stone);
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.btn-secondary:hover {
+  background: #dedcd5;
+  border-color: #b5b5b0;
+  color: var(--color-ink);
+}
+
+.btn-secondary:active {
+  background: #d4d2cb;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Ghost Text Button */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-cursorgothic);
+  font-weight: 400;
+  font-size: 14px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+}
+
+.btn-ghost:hover {
+  background: rgba(38, 37, 30, 0.05);
+  text-decoration: underline;
+}
+
+/* Forest Action Button */
+.btn-success, .btn-forest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 16px;
+  background: var(--color-forest);
+  color: var(--color-parchment);
+  font-family: var(--font-cursorgothic);
+  font-weight: 400;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--color-forest);
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+}
+
+.btn-success:hover, .btn-forest:hover {
+  background: #2a634c;
+  border-color: #2a634c;
+}
+
+.btn-success:disabled, .btn-forest:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Amber Action Button */
+.btn-amber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 16px;
+  background: var(--color-amber);
+  color: var(--color-parchment);
+  font-family: var(--font-cursorgothic);
+  font-weight: 400;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--color-amber);
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+}
+
+.btn-amber:hover {
+  background: #a87329;
+}
+
+/* Danger / Crimson Button */
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 16px;
+  background: transparent;
+  color: var(--color-crimson);
+  font-family: var(--font-cursorgothic);
+  font-weight: 400;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid #e5a7b7;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+}
+
+.btn-danger:hover {
+  background: rgba(207, 45, 86, 0.07);
+  border-color: var(--color-crimson);
+}
+
+.btn-danger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ============================
+   FORM INPUTS
+============================= */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-family: var(--font-berkeleymono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-ash);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: #ffffff;
+  border: 1px solid var(--color-stone);
+  border-radius: 4px;
+  color: var(--color-ink);
+  font-size: 14px;
+  font-family: var(--font-cursorgothic);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+  appearance: none;
+}
+
+.form-input::placeholder {
+  color: var(--color-mist);
+}
+
+.form-input:focus {
+  border-color: var(--color-ink);
+  box-shadow: 0 0 0 1px var(--color-ink);
+}
+
+.form-input:disabled {
+  background: var(--color-bone);
+  color: var(--color-mist);
+  cursor: not-allowed;
+}
+
+.form-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-ash);
+  pointer-events: none;
+}
+
+.form-input-wrapper .form-input {
+  padding-left: 38px;
+}
+
+.input-error {
+  border-color: var(--color-crimson) !important;
+}
+
+.error-msg {
+  font-size: 12px;
+  color: var(--color-crimson);
+  margin-top: 4px;
+  font-family: var(--font-berkeleymono);
+}
+
+/* ============================
+   STATUS BADGES & MONO TAGS
+============================= */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: var(--font-berkeleymono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--color-linen);
+  border: 1px solid var(--color-stone);
+  color: var(--color-ink);
+}
+
+.badge-available, .badge-found, .badge-success {
+  background: #e5ede7;
+  border-color: #b8d4c5;
+  color: var(--color-forest);
+}
+
+.badge-claimed, .badge-warning {
+  background: #f7ede1;
+  border-color: #edd1b4;
+  color: var(--color-amber);
+}
+
+.badge-lost, .badge-neutral {
+  background: var(--color-bone);
+  border-color: var(--color-stone);
+  color: var(--color-driftwood);
+}
+
+.badge-danger {
+  background: #fcebed;
+  border-color: #f5b8c3;
+  color: var(--color-crimson);
+}
+
+/* ============================
+   PRODUCT CARDS & ELEVATED SURFACES
+============================= */
+.product-card {
+  background: var(--color-bone);
+  border: 1px solid var(--color-stone);
+  border-radius: 4px;
+  padding: 24px;
+  box-shadow: var(--shadow-warm);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.product-card:hover {
+  border-color: #b5b5b0;
+  box-shadow: 0 4px 14px rgba(38, 37, 30, 0.06);
+}
+
+/* Legacy glass-card alias mapped cleanly to light parchment card */
+.glass-card {
+  background: var(--color-bone);
+  border: 1px solid var(--color-stone);
+  border-radius: 4px;
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.glass-card:hover {
+  border-color: #b5b5b0;
+  background: #eeebe6;
+}
+
+/* ============================
+   TABLES
+============================= */
+.cf-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cf-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-family: var(--font-berkeleymono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-ash);
+  border-bottom: 1px solid var(--color-stone);
+  background: var(--color-bone);
+}
+
+.cf-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: var(--color-ink);
+  border-bottom: 1px solid #e6e5e0;
+  vertical-align: middle;
+}
+
+.cf-table tr:last-child td {
+  border-bottom: none;
+}
+
+.cf-table tr:hover td {
+  background: #f0efea;
+}
+
+/* ============================
+   ANIMATIONS & SKELETON
+============================= */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0%   { opacity: 0.5; }
+  50%  { opacity: 0.8; }
+  100% { opacity: 0.5; }
+}
+
+.animate-fadeIn  { animation: fadeIn 0.25s ease forwards; }
+.animate-spin    { animation: spin 0.8s linear infinite; }
+.animate-shimmer { animation: shimmer 1.5s ease infinite; }
+
+.skeleton {
+  background: var(--color-linen);
+  border-radius: 4px;
+  animation: shimmer 1.5s ease infinite;
+}
+
+/* ============================
+   REDUCED MOTION
+============================= */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

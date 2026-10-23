@@ -1,8 +1,21 @@
 import axios from "axios";
 
+const configuredApiUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1";
+const resolveApiBaseUrl = () => {
+  const apiUrl = new URL(configuredApiUrl, window.location.origin);
+  const apiUsesLoopback = /^(localhost|127(?:\.\d{1,3}){3}|\[::1\])$/i.test(apiUrl.hostname);
+  const pageUsesLanHost = !/^(localhost|127(?:\.\d{1,3}){3}|\[::1\])$/i.test(window.location.hostname);
+
+  if (import.meta.env.DEV && apiUsesLoopback && pageUsesLanHost) {
+    apiUrl.hostname = window.location.hostname;
+  }
+
+  return apiUrl.toString();
+};
+
 // 1. Initialize custom axios instance with local environments base url
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1",
+  baseURL: resolveApiBaseUrl(),
   withCredentials: true, // Enables sending/receiving secure httpOnly cookies & sessions
   headers: {
     "Content-Type": "application/json",
@@ -12,8 +25,11 @@ const API = axios.create({
 // 2. Outgoing Request Interceptor: Automatically inject Access Token if it is saved in local storage
 API.interceptors.request.use(
   (config) => {
+    const accessToken = localStorage.getItem("campusfind_token");
     const userStr = localStorage.getItem("campusfind_user");
-    if (userStr) {
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    } else if (userStr) {
       try {
         const user = JSON.parse(userStr);
         if (user?.token) {
@@ -49,8 +65,8 @@ API.interceptors.response.use(
 
 export const authAPI = {
   /**
-   * Register a new Student account
-   * @param {Object} userData { username, CollegeID, email, phone, password }
+   * Start a new Student registration
+   * @param {Object} userData { username, college_id, email, mobile, password }
    */
   register: (userData) => API.post("/users/register", userData),
 
@@ -94,6 +110,7 @@ export const itemsAPI = {
    * @param {Object} params { type, category, status }
    */
   getAll: (params) => API.get("/items", { params }),
+  adminGetAll: () => API.get("/items/admin/records"),
 
   /**
    * Advanced search items via search index
@@ -129,6 +146,25 @@ export const itemsAPI = {
   delete: (id) => API.delete(`/items/${id}`),
 };
 
+export const foundItemUploadAPI = {
+  createSession: () => API.post("/found-item-uploads/sessions"),
+  getSession: (id, config) => API.get(`/found-item-uploads/sessions/${id}`, config),
+  cancelSession: (id) => API.delete(`/found-item-uploads/sessions/${id}`),
+  uploadFromAdmin: (id, formData, config) =>
+    API.post(`/found-item-uploads/sessions/${id}/image`, formData, {
+      ...config,
+      headers: { ...config?.headers, "Content-Type": "multipart/form-data" },
+    }),
+  publish: (id, payload) => API.post(`/found-item-uploads/sessions/${id}/publish`, payload),
+  validateMobileToken: (token, config) =>
+    API.get(`/found-item-uploads/${encodeURIComponent(token)}`, config),
+  uploadFromMobile: (token, formData, config) =>
+    API.post(`/found-item-uploads/${encodeURIComponent(token)}/image`, formData, {
+      ...config,
+      headers: { ...config?.headers, "Content-Type": "multipart/form-data" },
+    }),
+};
+
 export const claimsAPI = {
   /**
    * File a claim for a lost/found item
@@ -160,6 +196,14 @@ export const claimsAPI = {
    * @param {Object} verificationData { status: 'approved' | 'rejected', note }
    */
   adminVerify: (claimId, verificationData) => API.post(`/claims/${claimId}/verify`, verificationData),
+  getHandoverItems: () => API.get("/claims/handover/items"),
+  getHandoverHistory: () => API.get("/claims/handover/history"),
+  getHandoverSession: (id) => API.get(`/claims/handover/${id}`),
+  cancelHandoverSession: (id) => API.delete(`/claims/handover/${id}`),
+  checkHandoverStudent: (email) => API.post("/claims/handover/check-student", { email }),
+  sendHandoverOtp: (payload) => API.post("/claims/handover/send-otp", payload),
+  verifyHandoverOtp: (payload) => API.post("/claims/handover/verify-otp", payload),
+  confirmHandover: (payload) => API.post("/claims/handover/confirm", payload),
 };
 
 export default API;
