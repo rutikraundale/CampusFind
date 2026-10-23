@@ -1,11 +1,18 @@
 import multer from "multer";
 import path from "path";
+import { fileURLToPath } from "url";
+import { mkdir } from "fs/promises";
 import { ApiError } from "../utilities/api_error.js";
 
-// ─── Disk storage: ./public/temp ─────────────────────────────────────────────
+const tempDirectory = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "../public/temp"
+);
+
 const storage = multer.diskStorage({
     destination: (_req, _file, cb) => {
-        cb(null, "./public/temp");
+        mkdir(tempDirectory, { recursive: true })
+            .then(() => cb(null, tempDirectory), cb);
     },
     // Unique filename prevents collisions when two users upload same-named file
     filename: (_req, file, cb) => {

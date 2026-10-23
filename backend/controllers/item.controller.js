@@ -4,6 +4,10 @@ import { ApiResponse } from "../utilities/api_response.js";
 import { Item } from "../model/items.model.js";
 import { User } from "../model/user.model.js";
 import { uploadOnCloudinary } from "../utilities/cloudinary.js";
+import {
+    isResponsibilityDeclarationAccepted,
+    RESPONSIBILITY_DECLARATION_VERSION,
+} from "../utilities/student-registration.js";
 import fs from "fs";
 
 // ─── Helper: clean up temp file ───────────────────────────────────────────────
@@ -25,8 +29,7 @@ const deleteTempFile = (localPath) => {
  *   description  (string, required)
  *   foundAt      (string, required)   — location where item was found
  *   category     (string, optional)   — electronics | clothing | accessories | books | documents | other
- *   contactEmail (string, optional)   — defaults to the logged-in user's email
- *   contactPhone (string, required)
+ *   declarationAccepted / declarationVersion — required current responsibility statement
  *
  * File:
  *   image        (file, required)     — JPEG / PNG / WebP, max 5 MB
@@ -37,33 +40,55 @@ const postItem = asyncHandler(async (req, res,next) => {
     const localImagePath = req.file?.path;
 
     try {
-        console.log("POST /items received body:", req.body);
-        console.log("POST /items received file:", req.file);
 
+        const body = req.body || {};
         const {
             title,
             description,
             foundAt,
+            reportType,
             category,
-            contactPhone,
-        } = req.body;   
+            declarationAccepted,
+            declarationVersion,
+        } = body;
 
         // ── Validation ────────────────────────────────────────────────────────
-        const missing = [];
-        if (!title?.trim())       missing.push("title");
-        if (!description?.trim()) missing.push("description");
-        if (!foundAt?.trim())     missing.push("foundAt");
-        if (!contactPhone?.trim()) missing.push("contactPhone");
-        if (!localImagePath)      missing.push("image");
+        const missing = ["title", "description", "foundAt"].filter(
+            (field) => typeof body[field] !== "string" || !body[field].trim()
+        );
+        if (!localImagePath) missing.push("image");
 
         if (missing.length > 0) {
             throw new ApiError(400, `Missing required fields: ${missing.join(", ")}`);
         }
+        if (reportType !== undefined && typeof reportType !== "string") {
+            throw new ApiError(400, "Report type must be lost or found");
+        }
+        if (category !== undefined && typeof category !== "string") {
+            throw new ApiError(400, "Select a valid item category");
+        }
+        const normalizedReportType = typeof reportType === "string" ? reportType.trim().toLowerCase() : "found";
+        if (!["lost", "found"].includes(normalizedReportType)) {
+            throw new ApiError(400, "Report type must be lost or found");
+        }
+        if (!isResponsibilityDeclarationAccepted(declarationAccepted, declarationVersion)) {
+            throw new ApiError(400, "Accept the current responsibility declaration before posting");
+        }
+        if (title.trim().length > 120 || description.trim().length > 500 || foundAt.trim().length > 120) {
+            throw new ApiError(400, "Item title, description, or location exceeds the allowed length");
+        }
 
-        // ── Contact email: use body value or fall back to account email ───────
-        const contactEmail = req.body.contactEmail?.trim()
-            ? req.body.contactEmail.trim().toLowerCase()
-            : req.user.email;
+        // ── Contact identity always comes from the authenticated account ────
+        const allowedCategories = [
+            "electronics", "clothing", "accessories", "books", "documents",
+            "wallet", "id card", "keys", "other",
+        ];
+        const normalizedCategory = typeof category === "string"
+            ? category.trim().toLowerCase()
+            : "other";
+        if (!allowedCategories.includes(normalizedCategory)) {
+            throw new ApiError(400, "Select a valid item category");
+        }
 
         // ── Upload image to Cloudinary ─────────────────────────────────────────
         const cloudinaryResponse = await uploadOnCloudinary(localImagePath);
@@ -77,10 +102,16 @@ const postItem = asyncHandler(async (req, res,next) => {
             description: description.trim(),
             image: cloudinaryResponse.url,
             foundAt: foundAt.trim(),
-            category: category || "other",
+            reportType: normalizedReportType,
+            category: normalizedCategory,
             postedBy: req.user._id,
-            contactEmail,
-            contactPhone: contactPhone.trim(),
+            contactEmail: req.user.email,
+            contactPhone: req.user.mobile,
+            responsibilityDeclaration: {
+                version: RESPONSIBILITY_DECLARATION_VERSION,
+                acceptedAt: new Date(),
+                acceptedBy: req.user._id,
+            },
         });
 
         // ── Reflect in user's postedItems array ───────────────────────────────
@@ -121,6 +152,7 @@ const getAllItems = asyncHandler(async (req, res) => {
     }
 
     const items = await Item.find(filter)
+        .select("-contactEmail -contactPhone -responsibilityDeclaration")
         .populate("postedBy", "username college_id")
         .sort({ createdAt: -1 });
 
@@ -129,10 +161,21 @@ const getAllItems = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, items, "Items fetched successfully"));
 });
 
+const getAdminItems = asyncHandler(async (_req, res) => {
+    const items = await Item.find()
+        .populate("postedBy", "username email college_id")
+        .populate("claimedBy", "username email college_id")
+        .sort({ createdAt: -1 });
+
+    return res.status(200).json(new ApiResponse(200, items, "Administrative item records fetched"));
+});
+
 // ─── GET /api/v1/items/:id  ───────────────────────────────────────────────────
 /** Get a single item by ID (public). */
 const getItemById = asyncHandler(async (req, res) => {
-    const item = await Item.findById(req.params.id).populate(
+    const item = await Item.findById(req.params.id)
+        .select("-contactEmail -contactPhone -responsibilityDeclaration")
+        .populate(
         "postedBy",
         "username college_id"
     );
@@ -147,7 +190,7 @@ const getItemById = asyncHandler(async (req, res) => {
 // ─── GET /api/v1/items/my-posts  ─────────────────────────────────────────────
 /** Get all items posted by the logged-in user. Auth required. */
 const getMyPostedItems = asyncHandler(async (req, res) => {
-    const items = await Item.find({ postedBy: req.user._id }).sort({
+    const items = await Item.find({ postedBy: req.user._id, postedByModel: "User" }).sort({
         createdAt: -1,
     });
 
@@ -166,7 +209,7 @@ const deleteItem = asyncHandler(async (req, res) => {
     const item = await Item.findById(req.params.id);
     if (!item) throw new ApiError(404, "Item not found");
 
-    const isOwner   = item.postedBy.toString() === req.user._id.toString();
+    const isOwner   = item.postedByModel === "User" && item.postedBy.toString() === req.user._id.toString();
     const isAdmin   = req.user.role === "admin";
 
     if (!isOwner && !isAdmin) {
@@ -176,13 +219,15 @@ const deleteItem = asyncHandler(async (req, res) => {
     await item.deleteOne();
 
     // Remove from user's postedItems
-    await User.findByIdAndUpdate(item.postedBy, {
-        $pull: { postedItems: item._id },
-    });
+    if (item.postedByModel === "User") {
+        await User.findByIdAndUpdate(item.postedBy, {
+            $pull: { postedItems: item._id },
+        });
+    }
 
     return res
         .status(200)
         .json(new ApiResponse(200, {}, "Item deleted successfully"));
 });
 
-export { postItem, getAllItems, getItemById, getMyPostedItems, deleteItem };
+export { postItem, getAllItems, getAdminItems, getItemById, getMyPostedItems, deleteItem };

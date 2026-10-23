@@ -20,14 +20,26 @@ import userRouter from "./routes/user.routes.js";
 import itemRouter from "./routes/item.routes.js";
 import claimRouter from "./routes/claim.routes.js";
 import adminRouter from "./routes/admin.routes.js";
+import foundItemUploadRouter from "./routes/found-item-upload.routes.js";
 import searchRouter from "./routes/search.route.js";
+import { cleanupExpiredUploadSessions } from "./controllers/found-item-upload.controller.js";
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/items", itemRouter);
 app.use("/api/v1/claims", claimRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/search",searchRouter);
-app.use("/api/v1/admin",adminRouter);
+app.use("/api/v1/found-item-uploads", foundItemUploadRouter);
+
+const uploadSessionCleanup = setInterval(() => {
+    cleanupExpiredUploadSessions().catch((error) => {
+        console.error("Failed to clean expired found-item upload sessions:", error);
+    });
+}, 5 * 60 * 1000);
+uploadSessionCleanup.unref();
+cleanupExpiredUploadSessions().catch((error) => {
+    console.error("Failed to run initial found-item upload cleanup:", error);
+});
 
 // ─── Global error handler ─────────────────────────────────────────────────────
 app.use((err, _req, res, _next) => {

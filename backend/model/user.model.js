@@ -73,6 +73,24 @@ const userschema = new Schema(
         emailVerificationExpiry: {
             type: Date,
         },
+        emailVerificationOtpHash: {
+            type: String,
+            select: false,
+        },
+        emailVerificationOtpExpiry: {
+            type: Date,
+        },
+        emailVerificationOtpAttempts: {
+            type: Number,
+            default: 0,
+        },
+        emailVerificationOtpSentAt: {
+            type: Date,
+        },
+        emailVerificationOtpSendCount: {
+            type: Number,
+            default: 0,
+        },
     },
     {
         timestamps: true,
@@ -80,12 +98,20 @@ const userschema = new Schema(
 );
 
 userschema.pre("save", async function () {
+    if (this.$locals.passwordAlreadyHashed) {
+        this.$locals.passwordAlreadyHashed = false;
+        return;
+    }
     if (!this.isModified("password")) return ;
 
     this.password = await bcrypt.hash(this.password, 10);
-    
-
 });
+
+userschema.statics.createWithPasswordHash = function (userData, passwordHash) {
+    const user = new this({ ...userData, password: passwordHash });
+    user.$locals.passwordAlreadyHashed = true;
+    return user.save();
+};
 
 userschema.methods.isPasswordCorrect = async function (password) {
     return await bcrypt.compare(password, this.password);

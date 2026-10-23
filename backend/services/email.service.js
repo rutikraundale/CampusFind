@@ -54,6 +54,22 @@ export const sendClaimOtpEmail = async (to, otp) => {
   });
 };
 
+export const sendHandoverOtpEmail = async (to, otp, itemTitle) => {
+  return sendEmail({
+    to,
+    subject: "CampusFind in-person item verification",
+    text: `Your CampusFind verification code for "${itemTitle}" is ${otp}. It expires in 5 minutes. Share it only with the administrator handling the in-person item handover.`,
+    html: `
+      <div style="font-family: Arial, sans-serif; background: #f7f7f4; color: #26251e; padding: 32px; max-width: 520px; margin: 0 auto; border: 1px solid #cdcdc9; border-radius: 4px;">
+        <h2 style="font-weight: 400; margin: 0 0 16px;">CampusFind item handover</h2>
+        <p style="line-height: 1.6;">A CampusFind administrator requested this code while verifying an in-person handover for <strong>${itemTitle.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character])}</strong>.</p>
+        <p style="font-size: 28px; letter-spacing: 6px; text-align: center; padding: 14px; background: #e6e5e0; border-radius: 4px;">${otp}</p>
+        <p style="line-height: 1.6;">This code expires in 5 minutes. Share it only with the administrator handling the handover. If you did not request this, ignore this message.</p>
+      </div>
+    `,
+  });
+};
+
 export const sendVerificationEmail = async (to, token) => {
   return sendEmail({
     to,
@@ -79,4 +95,3 @@ export const sendVerificationOtpEmail = async (to, otp) => {
     `
   });
 };
-

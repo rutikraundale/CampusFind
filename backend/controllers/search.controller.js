@@ -34,7 +34,10 @@ const searchItems=()=>(asyncHandler(async(req,res)=>{
             {description:{$regex:searchPattern,$options:"i"}},
             {foundAt:{$regex:searchPattern,$options:"i"}}
         ]
-    }).skip(skip).limit(limit).populate("postedBy","name email");
+    }).select("-contactEmail -contactPhone -responsibilityDeclaration")
+        .skip(skip)
+        .limit(limit)
+        .populate("postedBy", "username college_id");
     
     return res.status(200).json(new ApiResponse(200,"Items fetched successfully",items))
 

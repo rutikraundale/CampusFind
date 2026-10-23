@@ -3,6 +3,7 @@ import { ApiError } from "../utilities/api_error.js";
 import { asyncHandler } from "../utilities/async_handler.js";
 import { User } from "../model/user.model.js";
 import { Admin } from "../model/admin.model.js";
+import { normalizeStudentEmail } from "../utilities/student-registration.js";
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
 const getModel = (role) => (role === "admin" ? Admin : User);
@@ -29,7 +30,7 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
     const model = getModel(decoded?.role);
     const user = await model
         .findById(decoded._id)
-        .select("-password -refreshToken");
+        .select("-password -refreshToken -emailVerificationToken -emailVerificationExpiry -emailVerificationOtpHash -emailVerificationOtpExpiry");
 
     if (!user) throw new ApiError(401, "User not found — token invalid");
 
@@ -51,3 +52,17 @@ export const checkRole = (...allowedRoles) =>
         }
         next();
     });
+
+export const requireVerifiedCollegeStudent = asyncHandler(async (req, _, next) => {
+    if (!req.user || req.user.role !== "Student") {
+        throw new ApiError(403, "Only student accounts may post items");
+    }
+    if (!normalizeStudentEmail(req.user.email)) {
+        throw new ApiError(403, "A verified @kbtcoe.org student email is required to post");
+    }
+    if (!req.user.isEmailVerified) {
+        throw new ApiError(403, "Verify your campus email before posting an item");
+    }
+
+    next();
+});

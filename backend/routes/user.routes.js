@@ -11,13 +11,28 @@ import {
     resendOTP
 } from "../controllers/auth.controller.js";
 import { verifyJWT, checkRole } from "../middleware/auth.middleware.js";
+import rateLimit from "express-rate-limit";
 
 const router = Router();
+const registrationRateLimit = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 8,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    message: { success: false, message: "Too many registration requests. Try again later.", errors: [] },
+});
+const verificationRateLimit = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    message: { success: false, message: "Too many verification attempts. Try again later.", errors: [] },
+});
 
 // ─── Public routes ────────────────────────────────────────────────────────────
-router.post("/register", registerUser);           // Student registration
-router.post("/verify-otp", verifyOTP);            // Verify email OTP
-router.post("/resend-otp", resendOTP);            // Resend email OTP
+router.post("/register", registrationRateLimit, registerUser); // Student registration
+router.post("/verify-otp", verificationRateLimit, verifyOTP); // Verify email OTP
+router.post("/resend-otp", registrationRateLimit, resendOTP); // Resend email OTP
 router.post("/login", loginUser);                 // Student + Admin login (role in body)
 router.post("/refresh", refreshAccessToken);      // Rotate refresh token
 router.get("/verify-email/:token", verifyEmail);  // Email verification (fallback URL link)

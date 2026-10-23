@@ -23,6 +23,16 @@ const itemSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    foundDate: {
+        type: Date,
+        default: Date.now,
+    },
+    reportType: {
+        type: String,
+        enum: ["lost", "found"],
+        default: "found",
+        index: true,
+    },
     status: {
         type: String,
         enum: ['available', 'pending', 'claimed'],
@@ -30,8 +40,44 @@ const itemSchema = new mongoose.Schema({
     },
     postedBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        refPath: "postedByModel",
         required: true,
+    },
+    postedByModel: {
+        type: String,
+        enum: ["User", "Admin"],
+        default: "User",
+        required: true,
+    },
+    uploadSession: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "FoundItemUploadSession",
+        unique: true,
+        sparse: true,
+    },
+    claimedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+    },
+    handoverClaim: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Claim",
+    },
+    handedOverBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Admin",
+    },
+    handoverAt: Date,
+    responsibilityDeclaration: {
+        version: {
+            type: String,
+            enum: ["v1"],
+        },
+        acceptedAt: Date,
+        acceptedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+        },
     },
     // Denormalised contact info so item pages display it without a populate()
     contactEmail: {
