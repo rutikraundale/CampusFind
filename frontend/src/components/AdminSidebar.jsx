@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ClipboardList, ShieldCheck, MapPin, LogOut, PackagePlus, Archive } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, ShieldCheck, MapPin, LogOut, PackagePlus, Archive, MessageSquareWarning } from 'lucide-react';
 
 const navItems = [
   { to: '/admin/dashboard', label: 'Overview', icon: LayoutDashboard },
@@ -7,6 +7,7 @@ const navItems = [
   { to: '/admin/records', label: 'Item Registry', icon: Archive },
   { to: '/admin/handover', label: 'Physical Handover', icon: ShieldCheck },
   { to: '/admin/claims', label: 'Claims Ledger', icon: ClipboardList },
+  { to: '/admin/issues', label: 'Student Issues', icon: MessageSquareWarning },
 ];
 
 export default function AdminSidebar() {
@@ -50,20 +51,6 @@ export default function AdminSidebar() {
           padding: '0 6px',
         }}
       >
-        <div
-          style={{
-            width: '26px',
-            height: '26px',
-            background: 'var(--color-ink)',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}
-        >
-          <MapPin size={13} color="#f7f7f4" strokeWidth={2.2} />
-        </div>
         <span
           style={{
             fontFamily: 'var(--font-cursorgothic)',
@@ -137,7 +124,7 @@ export default function AdminSidebar() {
           gap: '8px',
           padding: '9px 12px',
           borderRadius: '4px',
-          background: 'var(--color-parchment)',
+          background: 'var(--color-crimson)',
           border: '1px solid var(--color-stone)',
           color: 'var(--color-ink)',
           fontSize: '13px',
@@ -153,10 +140,10 @@ export default function AdminSidebar() {
           e.currentTarget.style.background = 'var(--color-linen)';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'var(--color-parchment)';
+          e.currentTarget.style.background = 'var(--color-crimson)';
         }}
       >
-        <LogOut size={14} color="var(--color-ash)" strokeWidth={1.8} />
+        <LogOut size={14} color="var(--color-ink)" strokeWidth={1.8} />
         Sign Out
       </button>
     </aside>

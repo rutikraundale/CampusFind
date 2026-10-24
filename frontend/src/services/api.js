@@ -138,6 +138,11 @@ export const itemsAPI = {
       headers: { "Content-Type": "multipart/form-data" }
     });
   },
+  guestSendOtp: (email) => API.post("/items/guest/send-otp", { email }),
+  guestVerifyOtp: (payload) => API.post("/items/guest/verify-otp", payload),
+  guestCreate: (formData) => API.post("/items/guest", formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+  }),
 
   /**
    * Delete an item by ID (owner or admin only)
@@ -204,6 +209,13 @@ export const claimsAPI = {
   sendHandoverOtp: (payload) => API.post("/claims/handover/send-otp", payload),
   verifyHandoverOtp: (payload) => API.post("/claims/handover/verify-otp", payload),
   confirmHandover: (payload) => API.post("/claims/handover/confirm", payload),
+};
+
+export const studentIssuesAPI = {
+  create: (issue) => API.post("/issues", issue),
+  getMine: () => API.get("/issues/mine"),
+  adminGetAll: () => API.get("/issues/admin"),
+  adminUpdateStatus: (id, update) => API.patch(`/issues/${id}/status`, update),
 };
 
 export default API;

@@ -22,6 +22,7 @@ export default function Navbar({ user: propUser = null }) {
   const navLinks = user?.role === 'admin'
     ? [
         { to: '/admin/dashboard', label: 'Dashboard' },
+        { to: '/admin/issues', label: 'Student Issues' },
         { to: '/admin/claims', label: 'Claims' },
         { to: '/admin/handover', label: 'Physical Handover' },
       ]
@@ -29,6 +30,7 @@ export default function Navbar({ user: propUser = null }) {
         { to: '/', label: 'Home' },
         { to: '/search', label: 'Directory' },
         { to: '/post-item', label: 'Report Item' },
+        { to: '/issues', label: 'Feedback / Issues' },
       ];
 
   return (
@@ -64,20 +66,6 @@ export default function Navbar({ user: propUser = null }) {
             gap: '8px',
           }}
         >
-          <div
-            style={{
-              width: '26px',
-              height: '26px',
-              background: 'var(--color-ink)',
-              borderRadius: '4px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <MapPin size={14} color="#f7f7f4" strokeWidth={2.2} />
-          </div>
           <span
             style={{
               fontFamily: 'var(--font-cursorgothic)',

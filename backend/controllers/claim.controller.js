@@ -8,6 +8,7 @@ import { Admin } from "../model/admin.model.js";
 import crypto from "crypto";
 import mongoose from "mongoose";
 import { sendHandoverOtpEmail } from "../services/email.service.js";
+import { normalizeStudentEmail } from "../utilities/student-registration.js";
 
 // ─── Helper: generate a 6-digit OTP ──────────────────────────────────────────
 const generateOTP = () =>
@@ -47,12 +48,12 @@ const getHandoverItems = asyncHandler(async (_req, res) => {
 });
 
 const checkHandoverStudent = asyncHandler(async (req, res) => {
-    const email = req.body?.email;
-    if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-        throw new ApiError(400, "Enter a valid CampusFind student email");
+    const normalizedEmail = normalizeStudentEmail(req.body?.email);
+    if (!normalizedEmail) {
+        throw new ApiError(400, "Enter a valid @kbtcoe.org CampusFind student email");
     }
 
-    const student = await User.findOne({ email: email.trim().toLowerCase() })
+    const student = await User.findOne({ email: normalizedEmail })
         .select("username email isEmailVerified");
     if (!student) {
         return res.status(200).json(new ApiResponse(200, {
@@ -72,13 +73,14 @@ const checkHandoverStudent = asyncHandler(async (req, res) => {
 
 const resolveHandoverParticipants = async ({ itemId, email, adminId }) => {
     validateObjectId(itemId, "Item ID");
-    if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-        throw new ApiError(400, "Enter the student's registered email address");
+    const normalizedEmail = normalizeStudentEmail(email);
+    if (!normalizedEmail) {
+        throw new ApiError(400, "Enter the student's registered @kbtcoe.org email address");
     }
 
     const [item, student] = await Promise.all([
         Item.findById(itemId).select("title status postedBy postedByModel"),
-        User.findOne({ email: email.trim().toLowerCase() }).select("username email isEmailVerified"),
+        User.findOne({ email: normalizedEmail }).select("username email isEmailVerified"),
     ]);
     if (!item) throw new ApiError(404, "Item not found");
     if (item.status !== "available") throw new ApiError(409, "This item is no longer available for handover");
@@ -159,12 +161,14 @@ const cancelHandoverSession = asyncHandler(async (req, res) => {
 
 const sendHandoverOtp = asyncHandler(async (req, res) => {
     const { itemId, studentEmail, destinationEmail } = req.body || {};
-    if (typeof destinationEmail !== "string" || destinationEmail.trim().toLowerCase() !== studentEmail?.trim()?.toLowerCase()) {
-        throw new ApiError(400, "OTP can only be sent to the student's registered CampusFind email");
+    const normalizedStudentEmail = normalizeStudentEmail(studentEmail);
+    const normalizedDestinationEmail = normalizeStudentEmail(destinationEmail);
+    if (!normalizedStudentEmail || !normalizedDestinationEmail || normalizedDestinationEmail !== normalizedStudentEmail) {
+        throw new ApiError(400, "OTP can only be sent to the student's registered @kbtcoe.org CampusFind email");
     }
     const { item, student } = await resolveHandoverParticipants({
         itemId,
-        email: studentEmail,
+        email: normalizedStudentEmail,
         adminId: req.user._id,
     });
 

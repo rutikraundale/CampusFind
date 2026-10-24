@@ -22,6 +22,7 @@ import claimRouter from "./routes/claim.routes.js";
 import adminRouter from "./routes/admin.routes.js";
 import foundItemUploadRouter from "./routes/found-item-upload.routes.js";
 import searchRouter from "./routes/search.route.js";
+import studentIssueRouter from "./routes/student-issue.routes.js";
 import { cleanupExpiredUploadSessions } from "./controllers/found-item-upload.controller.js";
 
 app.use("/api/v1/users", userRouter);
@@ -30,6 +31,7 @@ app.use("/api/v1/claims", claimRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/search",searchRouter);
 app.use("/api/v1/found-item-uploads", foundItemUploadRouter);
+app.use("/api/v1/issues", studentIssueRouter);
 
 const uploadSessionCleanup = setInterval(() => {
     cleanupExpiredUploadSessions().catch((error) => {

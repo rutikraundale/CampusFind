@@ -41,13 +41,12 @@ const itemSchema = new mongoose.Schema({
     postedBy: {
         type: mongoose.Schema.Types.ObjectId,
         refPath: "postedByModel",
-        required: true,
+        default: null,
     },
     postedByModel: {
         type: String,
-        enum: ["User", "Admin"],
-        default: "User",
-        required: true,
+        enum: ["User", "Admin", null],
+        default: null,
     },
     uploadSession: {
         type: mongoose.Schema.Types.ObjectId,
@@ -78,6 +77,19 @@ const itemSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
         },
+    },
+    reporterName: {
+        type: String,
+        trim: true,
+    },
+    reporterEmail: {
+        type: String,
+        lowercase: true,
+        trim: true,
+    },
+    reporterPhone: {
+        type: String,
+        trim: true,
     },
     // Denormalised contact info so item pages display it without a populate()
     contactEmail: {

@@ -30,20 +30,7 @@ export default function Footer() {
                 marginBottom: '14px',
               }}
             >
-              <div
-                style={{
-                  width: '24px',
-                  height: '24px',
-                  background: 'var(--color-ink)',
-                  borderRadius: '4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                <MapPin size={13} color="#f7f7f4" strokeWidth={2.2} />
-              </div>
+              
               <span
                 style={{
                   fontFamily: 'var(--font-cursorgothic)',
@@ -70,7 +57,7 @@ export default function Footer() {
               {[
                 { icon: Shield, href: '#' },
                 { icon: Globe, href: '#' },
-                { icon: Mail, href: 'mailto:support@campusfind.edu' },
+                { icon: Mail, href: 'mailto:campusfind.org@gmail.com' },
               ].map((item, i) => {
                 const SocialIcon = item.icon;
                 return (
@@ -166,7 +153,6 @@ export default function Footer() {
               {[
                 ['Student Sign In', '/login'],
                 ['Create Account', '/register'],
-                ['Admin Verification', '/admin/dashboard'],
               ].map(([label, to]) => (
                 <Link
                   key={to}
@@ -205,20 +191,12 @@ export default function Footer() {
               Desk Support
             </h4>
             <p style={{ color: 'var(--color-ash)', fontSize: '13px', marginBottom: '6px' }}>
-              support@campusfind.edu
+              campusfind.org@gmail.com
             </p>
             <p style={{ color: 'var(--color-ash)', fontSize: '13px', marginBottom: '6px' }}>
               Central Desk: Mon–Fri, 9AM–6PM
             </p>
-            <span
-              style={{
-                fontFamily: 'var(--font-berkeleymono)',
-                fontSize: '11px',
-                color: 'var(--color-driftwood)',
-              }}
-            >
-              CAMPUS NETWORK v2.4
-            </span>
+            
           </div>
         </div>
 
@@ -234,18 +212,9 @@ export default function Footer() {
           }}
         >
           <p style={{ color: 'var(--color-ash)', fontSize: '12px', margin: 0 }}>
-            © 2026 CampusFind. Built with paper-like editorial clarity for campus life.
+            © 2026 CampusFind. All rights reserved.
           </p>
-          <p
-            style={{
-              color: 'var(--color-driftwood)',
-              fontSize: '12px',
-              fontFamily: 'var(--font-berkeleymono)',
-              margin: 0,
-            }}
-          >
-            Light Atelier Theme · Design.md
-          </p>
+          
         </div>
       </div>
     </footer>

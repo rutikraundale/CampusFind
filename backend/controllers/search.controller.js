@@ -32,7 +32,9 @@ const searchItems=()=>(asyncHandler(async(req,res)=>{
         $or:[
             {title:{$regex:searchPattern,$options:"i"}},
             {description:{$regex:searchPattern,$options:"i"}},
-            {foundAt:{$regex:searchPattern,$options:"i"}}
+            {foundAt:{$regex:searchPattern,$options:"i"}},
+            {reporterEmail:{$regex:searchPattern,$options:"i"}},
+            {contactEmail:{$regex:searchPattern,$options:"i"}}
         ]
     }).select("-contactEmail -contactPhone -responsibilityDeclaration")
         .skip(skip)

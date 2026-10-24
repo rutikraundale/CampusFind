@@ -8,6 +8,10 @@ const savedHandoverKey = 'campusfind_admin_handover';
 
 const unwrap = (response) => response?.data;
 const readableDate = (value) => value ? new Date(value).toLocaleDateString() : 'Date not recorded';
+const isCampusEmail = (email) => {
+  const normalized = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized) && normalized.split('@')[1] === 'kbtcoe.org';
+};
 
 export default function AdminHandoverPage() {
   const [items, setItems] = useState([]);
@@ -114,13 +118,20 @@ export default function AdminHandoverPage() {
 
   const checkStudent = async (event) => {
     event.preventDefault();
+    const normalizedEmail = studentEmail.trim();
+    if (!isCampusEmail(normalizedEmail)) {
+      setError('Enter a valid @kbtcoe.org CampusFind student email.');
+      setStudent(null);
+      setDestinationEmail('');
+      return;
+    }
     setCheckingStudent(true);
     setError('');
     setNotice('');
     setStudent(null);
     setDestinationEmail('');
     try {
-      const response = await claimsAPI.checkHandoverStudent(studentEmail.trim().toLowerCase());
+      const response = await claimsAPI.checkHandoverStudent(normalizedEmail.toLowerCase());
       const result = unwrap(response);
       if (!result.studentExists) {
         setNotice('No CampusFind account was found. Ask the student to register before continuing.');
@@ -140,6 +151,11 @@ export default function AdminHandoverPage() {
 
   const sendOtp = async () => {
     if (!student || !selectedItem) return;
+    const normalizedDestination = destinationEmail.trim();
+    if (!isCampusEmail(normalizedDestination) || normalizedDestination.toLowerCase() !== student.email.toLowerCase()) {
+      setError('OTP can only be sent to the student\'s registered @kbtcoe.org email.');
+      return;
+    }
     setSendingOtp(true);
     setError('');
     setNotice('');
@@ -147,7 +163,7 @@ export default function AdminHandoverPage() {
       const response = await claimsAPI.sendHandoverOtp({
         itemId: selectedItem._id,
         studentEmail: student.email,
-        destinationEmail,
+        destinationEmail: normalizedDestination.toLowerCase(),
       });
       const result = unwrap(response);
       const active = {

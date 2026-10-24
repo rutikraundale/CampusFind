@@ -3,6 +3,7 @@ import { ApiError } from "../utilities/api_error.js";
 import { User } from "../model/user.model.js";
 import { Admin } from "../model/admin.model.js";
 import { PendingRegistration } from "../model/pending-registration.model.js";
+import { Item } from "../model/items.model.js";
 import { ApiResponse } from "../utilities/api_response.js";
 import { sendVerificationEmail, sendVerificationOtpEmail } from "../services/email.service.js";
 import jwt from "jsonwebtoken";
@@ -50,6 +51,31 @@ const OTP_RESEND_COOLDOWN_MS = 60 * 1000;
 const OTP_SEND_WINDOW_MS = 60 * 60 * 1000;
 const OTP_SEND_LIMIT = 5;
 const OTP_ATTEMPT_LIMIT = 5;
+
+const linkGuestReportsForUser = async (email, userId) => {
+    const normalizedEmail = normalizeStudentEmail(email);
+    if (!normalizedEmail) return 0;
+
+    const result = await Item.updateMany(
+        {
+            reporterEmail: normalizedEmail,
+            postedBy: null,
+            $or: [
+                { postedByModel: { $exists: false } },
+                { postedByModel: null },
+                { postedByModel: "User" },
+            ],
+        },
+        {
+            $set: {
+                postedBy: userId,
+                postedByModel: "User",
+            },
+        }
+    );
+
+    return result.modifiedCount ?? 0;
+};
 
 const otpSecret = () => {
     const secret = process.env.REGISTRATION_OTP_SECRET || process.env.ACCESS_TOKEN_SECRET;
@@ -268,6 +294,10 @@ const loginUser = asyncHandler(async (req, res) => {
     const loggedInUser = await model.findById(user._id)
         .select("-password -refreshToken -emailVerificationToken -emailVerificationExpiry -emailVerificationOtpHash -emailVerificationOtpExpiry");
 
+    if (role === "Student" && loggedInUser?.email) {
+        await linkGuestReportsForUser(loggedInUser.email, loggedInUser._id);
+    }
+
     return res
         .status(200)
         .cookie("accessToken", accessToken, cookieOptions)
@@ -430,6 +460,7 @@ const verifyOTP = asyncHandler(async (req, res) => {
             throw error;
         }
 
+        await linkGuestReportsForUser(verifiedRegistration.email, createdUser._id);
         await PendingRegistration.deleteOne({ _id: verifiedRegistration._id, status: "creating" });
         const { accessToken, refreshToken } = await generateAndSaveTokens(createdUser._id, "Student");
         const user = await User.findById(createdUser._id)
@@ -487,6 +518,8 @@ const verifyOTP = asyncHandler(async (req, res) => {
         { new: true }
     );
     if (!verifiedUser) throw new ApiError(400, "Invalid or expired verification code");
+
+    await linkGuestReportsForUser(verifiedUser.email, verifiedUser._id);
 
     const { accessToken, refreshToken } = await generateAndSaveTokens(verifiedUser._id, "Student");
     const user = await User.findById(verifiedUser._id)

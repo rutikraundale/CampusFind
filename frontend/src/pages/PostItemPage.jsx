@@ -5,6 +5,17 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { itemsAPI } from '../services/api';
 
+const isCampusEmail = (email) => {
+  const normalized = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized) && normalized.split('@')[1] === 'kbtcoe.org';
+};
+
+const normalizeMobile = (mobile) => {
+  const compact = typeof mobile === 'string' ? mobile.trim().replace(/[\s()-]/g, '') : '';
+  const nationalNumber = compact.startsWith('+91') ? compact.slice(3) : compact;
+  return /^[6-9]\d{9}$/.test(nationalNumber) ? nationalNumber : null;
+};
+
 const CATEGORIES = ['Electronics', 'Wallet', 'ID Card', 'Books', 'Accessories', 'Clothing', 'Keys', 'Other'];
 const LOCATIONS = ['Library', 'Cafeteria', 'Sports Complex', 'Hostel A', 'Hostel B', 'Hostel C', 'Hostel D', 'Auditorium', 'Block 1', 'Block 2', 'Block 3', 'Parking Area', 'Other'];
 const RESPONSIBILITY_DECLARATION_VERSION = 'v1';
@@ -48,6 +59,13 @@ const getInitialForm = () => {
 
 export default function PostItemPage() {
   const navigate = useNavigate();
+  const [user] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('campusfind_user') || 'null');
+    } catch {
+      return null;
+    }
+  });
   const [form, setForm] = useState(getInitialForm);
   const [errors, setErrors] = useState({});
   const [images, setImages] = useState([]);
@@ -57,6 +75,13 @@ export default function PostItemPage() {
   const [apiError, setApiError] = useState('');
   const [declarationAccepted, setDeclarationAccepted] = useState(false);
   const [declarationError, setDeclarationError] = useState('');
+  const [guestOtpEmail, setGuestOtpEmail] = useState('');
+  const [guestOtp, setGuestOtp] = useState('');
+  const [guestOtpSent, setGuestOtpSent] = useState(false);
+  const [guestOtpVerified, setGuestOtpVerified] = useState(false);
+  const [guestOtpLoading, setGuestOtpLoading] = useState(false);
+  const [guestVerifyLoading, setGuestVerifyLoading] = useState(false);
+  const [guestVerificationProof, setGuestVerificationProof] = useState('');
   const fileRef = useRef();
 
   const onChange = (e) => {
@@ -90,6 +115,55 @@ export default function PostItemPage() {
     setDragActive(false);
   };
 
+  const handleGuestOtpRequest = async () => {
+    const email = form.contactEmail.trim();
+    if (!isCampusEmail(email)) {
+      setApiError('Use a valid @kbtcoe.org campus email address.');
+      return;
+    }
+    setGuestOtpLoading(true);
+    setApiError('');
+    try {
+      await itemsAPI.guestSendOtp(email.toLowerCase());
+      setGuestOtpSent(true);
+      setGuestOtpVerified(false);
+      setGuestVerificationProof('');
+      setGuestOtp('');
+      setApiError('');
+    } catch (err) {
+      setApiError(err.message || 'Could not send verification code.');
+    } finally {
+      setGuestOtpLoading(false);
+    }
+  };
+
+  const handleGuestOtpVerify = async () => {
+    const email = form.contactEmail.trim();
+    if (!isCampusEmail(email)) {
+      setApiError('Use a valid @kbtcoe.org campus email address.');
+      return;
+    }
+    if (!/^\d{6}$/.test(guestOtp.trim())) {
+      setApiError('Enter the six-digit verification code.');
+      return;
+    }
+    setGuestVerifyLoading(true);
+    setApiError('');
+    try {
+      const response = await itemsAPI.guestVerifyOtp({ email: email.toLowerCase(), otp: guestOtp.trim() });
+      const proof = response?.verificationProof || response?.data?.verificationProof;
+      if (!proof) throw new Error('Verification succeeded but the proof was not returned.');
+      setGuestVerificationProof(proof);
+      setGuestOtpVerified(true);
+      setApiError('');
+    } catch (err) {
+      setGuestOtpVerified(false);
+      setApiError(err.message || 'Could not verify your campus email code.');
+    } finally {
+      setGuestVerifyLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!declarationAccepted) {
@@ -99,6 +173,15 @@ export default function PostItemPage() {
     const errs = validate(form);
     if (images.length === 0) {
       errs.image = 'An image of the item is required';
+    }
+    if (!user) {
+      if (!isCampusEmail(form.contactEmail)) errs.contactEmail = 'Use your exact @kbtcoe.org campus email address';
+      if (!normalizeMobile(form.contactPhone)) errs.contactPhone = 'Enter a valid 10-digit Indian mobile number';
+      if (!form.contactName.trim()) errs.contactName = 'Your full name is required';
+      if (!guestOtpVerified || !guestVerificationProof) {
+        setApiError('Verify your college email before submitting a guest report.');
+        return;
+      }
     }
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setLoading(true);
@@ -112,12 +195,19 @@ export default function PostItemPage() {
       formData.append('category', form.category.trim().toLowerCase());
       formData.append('declarationAccepted', 'true');
       formData.append('declarationVersion', RESPONSIBILITY_DECLARATION_VERSION);
-      
       if (images.length > 0) {
         formData.append('image', images[0].file);
       }
 
-      await itemsAPI.create(formData);
+      if (!user) {
+        formData.append('reporterName', form.contactName.trim());
+        formData.append('reporterEmail', form.contactEmail.trim().toLowerCase());
+        formData.append('reporterPhone', normalizeMobile(form.contactPhone));
+        formData.append('verificationProof', guestVerificationProof);
+        await itemsAPI.guestCreate(formData);
+      } else {
+        await itemsAPI.create(formData);
+      }
       setSuccess(true);
     } catch (err) {
       setApiError(err.message || 'Failed to report item. Please check fields and try again.');
@@ -586,7 +676,8 @@ export default function PostItemPage() {
                 type="text" 
                 placeholder="Your full name" 
                 value={form.contactName} 
-                readOnly
+                readOnly={Boolean(user)}
+                onChange={onChange}
                 className={`form-input ${errors.contactName ? 'input-error' : ''}`} 
               />
               {errors.contactName && <span className="error-msg">{errors.contactName}</span>}
@@ -600,7 +691,8 @@ export default function PostItemPage() {
                   type="email" 
                   placeholder="student@kbtcoe.org" 
                   value={form.contactEmail} 
-                  readOnly
+                  readOnly={Boolean(user)}
+                  onChange={onChange}
                   className={`form-input ${errors.contactEmail ? 'input-error' : ''}`} 
                 />
                 {errors.contactEmail && <span className="error-msg">{errors.contactEmail}</span>}
@@ -613,14 +705,47 @@ export default function PostItemPage() {
                   type="tel" 
                   placeholder="9876543210" 
                   value={form.contactPhone} 
-                  readOnly
+                  readOnly={Boolean(user)}
+                  onChange={onChange}
                   className={`form-input ${errors.contactPhone ? 'input-error' : ''}`} 
                 />
                 {errors.contactPhone && <span className="error-msg">{errors.contactPhone}</span>}
               </div>
             </div>
+            {!user && (
+              <div style={{ display: 'grid', gap: '12px', padding: '14px', border: '1px solid var(--color-stone)', borderRadius: '4px', background: '#ffffff' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span style={{ fontFamily: 'var(--font-berkeleymono)', fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-ash)' }}>
+                    Guest verification
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <button type="button" className="btn-secondary" onClick={handleGuestOtpRequest} disabled={guestOtpLoading || !isCampusEmail(form.contactEmail)}>
+                    {guestOtpLoading ? 'Sending…' : guestOtpSent ? 'Resend code' : 'Send code'}
+                  </button>
+                  {guestOtpSent && (
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <input
+                        value={guestOtp}
+                        onChange={(event) => setGuestOtp(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="123456"
+                        maxLength={6}
+                        className="form-input"
+                        style={{ width: '120px', minWidth: '120px' }}
+                      />
+                      <button type="button" className="btn-primary" onClick={handleGuestOtpVerify} disabled={guestVerifyLoading || guestOtp.length !== 6}>
+                        {guestVerifyLoading ? 'Verifying…' : 'Verify Email'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {guestOtpVerified && <p style={{ margin: 0, color: 'var(--color-verdant)', fontSize: '12px' }}>College email verified. You can now submit this report.</p>}
+              </div>
+            )}
             <p style={{ color: 'var(--color-driftwood)', fontSize: '12px', margin: 0 }}>
-              Contact details come from your verified account and are not shown in the public directory.
+              {user
+                ? 'Contact details come from your verified account and are not shown in the public directory.'
+                : 'Guest reports require a verified @kbtcoe.org address before the report is accepted.'}
             </p>
           </div>
 

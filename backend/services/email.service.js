@@ -25,8 +25,12 @@ export const sendEmail = async ({ to, subject, text, html }) => {
       to,
       subject,
       text,
-      html,
     };
+
+    if (html) {
+      mailOptions.html = html;
+    }
+
     const response = await transporter.sendMail(mailOptions);
     return response;
   } catch (error) {
@@ -40,17 +44,7 @@ export const sendClaimOtpEmail = async (to, otp) => {
   return sendEmail({
     to,
     subject: "Your Claim OTP - CampusFind",
-    text: `Your OTP is ${otp}. It expires in 1 hour.`,
-    html: `
-      <div style="font-family: 'Space Grotesk', sans-serif; background: #05070E; color: #F2F4F8; padding: 40px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); max-width: 500px; margin: 0 auto;">
-        <h2 style="color: #6C63FF; text-align: center; margin-bottom: 24px;">CampusFind Item Claim</h2>
-        <p style="font-size: 15px; line-height: 1.6; color: #AEB6C7; text-align: center;">You have initiated a claim for an item on CampusFind. Use the One-Time Password (OTP) below and show it to the admin to complete your claim.</p>
-        <div style="background: rgba(108, 99, 255, 0.1); border: 1px dashed #6C63FF; border-radius: 12px; padding: 20px; margin: 30px 0; text-align: center;">
-          <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #38BDF8;">${otp}</span>
-        </div>
-        <p style="font-size: 13px; color: #5A5E7A; text-align: center;">This OTP is valid for 1 hour. If you did not initiate this claim, please ignore this email.</p>
-      </div>
-    `
+    text: `Hello,\n\nYour CampusFind claim OTP is: ${otp}\n\nThis code expires in 1 hour. If you did not request this, please ignore this email.\n\nThanks,\nCampusFind`,
   });
 };
 
@@ -58,15 +52,7 @@ export const sendHandoverOtpEmail = async (to, otp, itemTitle) => {
   return sendEmail({
     to,
     subject: "CampusFind in-person item verification",
-    text: `Your CampusFind verification code for "${itemTitle}" is ${otp}. It expires in 5 minutes. Share it only with the administrator handling the in-person item handover.`,
-    html: `
-      <div style="font-family: Arial, sans-serif; background: #f7f7f4; color: #26251e; padding: 32px; max-width: 520px; margin: 0 auto; border: 1px solid #cdcdc9; border-radius: 4px;">
-        <h2 style="font-weight: 400; margin: 0 0 16px;">CampusFind item handover</h2>
-        <p style="line-height: 1.6;">A CampusFind administrator requested this code while verifying an in-person handover for <strong>${itemTitle.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character])}</strong>.</p>
-        <p style="font-size: 28px; letter-spacing: 6px; text-align: center; padding: 14px; background: #e6e5e0; border-radius: 4px;">${otp}</p>
-        <p style="line-height: 1.6;">This code expires in 5 minutes. Share it only with the administrator handling the handover. If you did not request this, ignore this message.</p>
-      </div>
-    `,
+    text: `Hello,\n\nA CampusFind administrator requested a verification code for the item "${itemTitle}".\n\nYour code is: ${otp}\n\nThis code expires in 5 minutes. Share it only with the administrator handling the handover. If you did not request this, please ignore this message.\n\nThanks,\nCampusFind`,
   });
 };
 
@@ -82,16 +68,6 @@ export const sendVerificationOtpEmail = async (to, otp) => {
   return sendEmail({
     to,
     subject: "Verify Your Email - OTP",
-    text: `Your OTP for email verification is ${otp}. It is valid for 10 minutes.`,
-    html: `
-      <div style="font-family: 'Space Grotesk', sans-serif; background: #05070E; color: #F2F4F8; padding: 40px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); max-width: 500px; margin: 0 auto;">
-        <h2 style="color: #6C63FF; text-align: center; margin-bottom: 24px;">CampusFind Verification</h2>
-        <p style="font-size: 15px; line-height: 1.6; color: #AEB6C7; text-align: center;">Welcome to CampusFind! Use the One-Time Password (OTP) below to complete your registration and verify your email address.</p>
-        <div style="background: rgba(108, 99, 255, 0.1); border: 1px dashed #6C63FF; border-radius: 12px; padding: 20px; margin: 30px 0; text-align: center;">
-          <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #38BDF8;">${otp}</span>
-        </div>
-        <p style="font-size: 13px; color: #5A5E7A; text-align: center;">This OTP is valid for 10 minutes. If you did not request this, please ignore this email.</p>
-      </div>
-    `
+    text: `Hello,\n\nYour CampusFind verification code is: ${otp}\n\nThis code is valid for 10 minutes. If you did not request this, please ignore this email.\n\nThanks,\nCampusFind`,
   });
 };

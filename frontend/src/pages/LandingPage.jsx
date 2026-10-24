@@ -84,19 +84,7 @@ export default function LandingPage() {
         }}
       >
         <div style={{ maxWidth: '820px' }}>
-          <span
-            style={{
-              fontFamily: 'var(--font-berkeleymono)',
-              fontSize: '12px',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              color: 'var(--color-ash)',
-              display: 'inline-block',
-              marginBottom: '16px',
-            }}
-          >
-            CAMPUS LOST &amp; FOUND NETWORK · DIRECTORY
-          </span>
+        
 
           <h1
             style={{
@@ -232,7 +220,7 @@ export default function LandingPage() {
                 color: 'var(--color-ash)',
               }}
             >
-              campusfind.terminal // live-inventory.db
+              campusfind.terminal
             </span>
             <div style={{ display: 'flex', gap: '8px' }}>
               <span className="badge" style={{ fontSize: '10px' }}>STATUS: ONLINE</span>
@@ -369,7 +357,7 @@ export default function LandingPage() {
               marginBottom: '10px',
             }}
           >
-            ARCHITECTURE // 3-STEP RECOVERY
+            3-STEP RECOVERY
           </p>
           <h2
             style={{
@@ -507,7 +495,7 @@ export default function LandingPage() {
               marginBottom: '10px',
             }}
           >
-            DOCUMENTATION // FREQUENTLY ASKED
+            FREQUENTLY ASKED
           </p>
           <h2
             style={{

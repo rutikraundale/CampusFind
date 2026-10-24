@@ -11,6 +11,8 @@ import AdminHandoverPage from './pages/AdminHandoverPage';
 import AddFoundItemPage from './pages/AddFoundItemPage';
 import AdminItemRecordsPage from './pages/AdminItemRecordsPage';
 import MobileFoundItemUploadPage from './pages/MobileFoundItemUploadPage';
+import StudentIssuesPage from './pages/StudentIssuesPage';
+import AdminIssuesPage from './pages/AdminIssuesPage';
 
 function ProtectedAdminRoute({ children }) {
   let user = null;
@@ -20,6 +22,19 @@ function ProtectedAdminRoute({ children }) {
     user = null;
   }
   if (!user || user.role !== 'admin') {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+}
+
+function ProtectedStudentRoute({ children }) {
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem('campusfind_user') || 'null');
+  } catch {
+    user = null;
+  }
+  if (!user || user.role !== 'Student') {
     return <Navigate to="/login" replace />;
   }
   return children;
@@ -59,6 +74,7 @@ export default function App() {
         <Route path="/search" element={<StudentFacingRoute><SearchItemPage /></StudentFacingRoute>} />
         <Route path="/post-item" element={<StudentFacingRoute><PostItemPage /></StudentFacingRoute>} />
         <Route path="/profile" element={<StudentFacingRoute><ProfilePage /></StudentFacingRoute>} />
+        <Route path="/issues" element={<ProtectedStudentRoute><StudentIssuesPage /></ProtectedStudentRoute>} />
         <Route path="/mobile-upload" element={<MobileFoundItemUploadPage />} />
 
         {/* Admin Routes */}
@@ -68,6 +84,7 @@ export default function App() {
         <Route path="/admin/verify-claims" element={<Navigate to="/admin/handover" replace />} />
         <Route path="/admin/report" element={<ProtectedAdminRoute><AddFoundItemPage /></ProtectedAdminRoute>} />
         <Route path="/admin/records" element={<ProtectedAdminRoute><AdminItemRecordsPage /></ProtectedAdminRoute>} />
+        <Route path="/admin/issues" element={<ProtectedAdminRoute><AdminIssuesPage /></ProtectedAdminRoute>} />
         <Route path="/admin/found-items/new" element={<Navigate to="/admin/report" replace />} />
 
         {/* Fallback */}

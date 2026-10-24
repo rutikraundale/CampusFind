@@ -61,6 +61,17 @@ Claims are completed at the administration office. Admins select an available it
 
 Admins use one report form for both lost and found items. The report type is stored on the item record; found items alone can enter the physical handover process. Existing records without a report type are treated as found for compatibility.
 
+## Student feedback and issue reports
+
+Authenticated students can submit an issue such as a handover concern or a request to remove an item from the directory, then track its status on the `/issues` page. Each submission receives a unique, ten-character alphanumeric reference ID. The admin `/admin/issues` page lists submissions and allows admins to set the status to `Pending`, `Solved`, or `Reject`; admin notes are visible to the submitting student.
+
+| Method | Path | Access | Purpose |
+|---|---|---|---|
+| `POST` | `/api/v1/issues` | Student | Submit an issue with category, subject, description, and optional related item ID |
+| `GET` | `/api/v1/issues/mine` | Student | List only the current student's issues |
+| `GET` | `/api/v1/issues/admin` | Admin | List all student issues |
+| `PATCH` | `/api/v1/issues/:id/status` | Admin | Update status and optional student-visible admin note |
+
 All handover endpoints are mounted under `/api/v1/claims/handover` and require an authenticated admin. The item is changed from `available` to `claimed` with a conditional database update so concurrent handovers cannot claim the same item. OTP values are HMAC-hashed at rest, expire after five minutes, are limited to five attempts, and are never returned by the API. The active handover session can be resumed by the initiating admin; the session response does not include OTP data.
 
 | Method | Path | Purpose |
