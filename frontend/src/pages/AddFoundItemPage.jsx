@@ -12,6 +12,14 @@ const localDate = () => {
   const date = new Date();
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
+const phoneUploadUsesHttps = () => {
+  try {
+    const publicUrl = import.meta.env.VITE_PUBLIC_APP_URL?.trim();
+    return new URL(publicUrl || window.location.origin).protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
 
 const getAdminEmail = () => {
   try {
@@ -380,6 +388,11 @@ export default function AddFoundItemPage() {
                 <div className="found-upload-phone-copy">
                   <h3>Scan with your phone camera</h3>
                   <p>The temporary upload link expires at {new Date(session.expiresAt).toLocaleTimeString()}.</p>
+                  {!phoneUploadUsesHttps() && (
+                    <p className="found-upload-error-text">
+                      This link uses HTTP. Phone camera permission requires HTTPS; gallery uploads will still work.
+                    </p>
+                  )}
                   <p className="found-upload-inline-status" role="status">
                     {sessionStatus === 'uploaded' ? <CheckCircle size={15} /> : <LoaderCircle className="found-upload-spin" size={15} />}
                     {sessionStatus === 'uploaded' ? 'Photo received and attached.' : sessionStatus === 'uploading' ? 'Phone is uploading the image…' : sessionStatus === 'expired' ? 'This upload link expired.' : sessionStatus === 'cancelled' ? 'Upload cancelled.' : 'Waiting for a phone photo…'}

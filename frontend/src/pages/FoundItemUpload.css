@@ -287,6 +287,46 @@
   width: 100%;
 }
 
+.mobile-camera-security-note {
+  margin: 14px 0;
+  padding: 10px 12px;
+  color: var(--color-driftwood);
+  background: var(--color-parchment);
+  border: 1px solid var(--color-stone);
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.mobile-camera-panel {
+  margin: 18px 0 12px;
+  padding: 10px;
+  border: 1px solid var(--color-stone);
+  border-radius: 4px;
+  background: var(--color-parchment);
+}
+
+.mobile-camera-preview {
+  display: block;
+  width: 100%;
+  max-height: 55vh;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  background: #111;
+}
+
+.mobile-camera-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.mobile-camera-actions button {
+  min-height: 40px;
+}
+
 .mobile-upload-file-action {
   position: relative;
   overflow: hidden;
