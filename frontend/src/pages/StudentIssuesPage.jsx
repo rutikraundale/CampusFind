@@ -36,8 +36,23 @@ export default function StudentIssuesPage() {
   }, []);
 
   useEffect(() => {
-    loadIssues();
-  }, [loadIssues]);
+    let active = true;
+
+    studentIssuesAPI.getMine()
+      .then((response) => {
+        if (active) setIssues(response.data || []);
+      })
+      .catch((fetchError) => {
+        if (active) setError(fetchError.message || 'Could not load your issues.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();

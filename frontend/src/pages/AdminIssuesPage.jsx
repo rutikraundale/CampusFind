@@ -25,7 +25,24 @@ export default function AdminIssuesPage() {
     }
   }, []);
 
-  useEffect(() => { loadIssues(); }, [loadIssues]);
+  useEffect(() => {
+    let active = true;
+
+    studentIssuesAPI.adminGetAll()
+      .then((response) => {
+        if (active) setIssues(response.data || []);
+      })
+      .catch((loadError) => {
+        if (active) setError(loadError.message || 'Could not load student issues.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const updateIssue = async (issue, status, adminNote) => {
     setSavingId(issue._id);
