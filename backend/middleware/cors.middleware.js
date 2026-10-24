@@ -3,6 +3,7 @@ import cors from "cors";
 // Retrieve core allowed origins from environments and add common fallback local addresses
 const allowedOrigins = [
   process.env.CORS_ORIGIN,
+  "https://stirring-kleicha-860f66.netlify.app/",
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:5175",
