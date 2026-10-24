@@ -1,16 +1,26 @@
 import axios from "axios";
 
 const configuredApiUrl = import.meta.env.VITE_BASE_URL;
-const resolveApiBaseUrl = () => {
-  const apiUrl = new URL(configuredApiUrl, window.location.origin);
-  const apiUsesLoopback = /^(localhost|127(?:\.\d{1,3}){3}|\[::1\])$/i.test(apiUrl.hostname);
-  const pageUsesLanHost = !/^(localhost|127(?:\.\d{1,3}){3}|\[::1\])$/i.test(window.location.hostname);
 
-  if (import.meta.env.DEV && apiUsesLoopback && pageUsesLanHost) {
+if (!configuredApiUrl) {
+  throw new Error("VITE_BASE_URL is not configured.");
+}
+
+const resolveApiBaseUrl = () => {
+  const apiUrl = new URL(configuredApiUrl);
+
+  const isLoopback = (hostname) =>
+    /^(localhost|127(?:\.\d{1,3}){3}|\[::1\])$/i.test(hostname);
+
+  if (
+    import.meta.env.DEV &&
+    isLoopback(apiUrl.hostname) &&
+    !isLoopback(window.location.hostname)
+  ) {
     apiUrl.hostname = window.location.hostname;
   }
 
-  return apiUrl.toString();
+  return apiUrl.toString().replace(/\/+$/, "");
 };
 
 // 1. Initialize custom axios instance with local environments base url
