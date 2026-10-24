@@ -287,6 +287,34 @@
   width: 100%;
 }
 
+.mobile-upload-file-action {
+  position: relative;
+  overflow: hidden;
+}
+
+.mobile-upload-file-action[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.mobile-upload-file-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.mobile-upload-file-input:disabled {
+  cursor: not-allowed;
+}
+
+.mobile-upload-file-action:focus-within {
+  outline: 2px solid var(--color-ash);
+  outline-offset: 2px;
+}
+
 .mobile-upload-preview {
   display: block;
   width: 100%;

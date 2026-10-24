@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AlertCircle, Camera, CheckCircle, ImagePlus, LoaderCircle, RefreshCw } from 'lucide-react';
 import { foundItemUploadAPI } from '../services/api';
@@ -9,8 +9,6 @@ const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
 export default function MobileFoundItemUploadPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
-  const cameraInput = useRef(null);
-  const galleryInput = useRef(null);
   const [checking, setChecking] = useState(true);
   const [sessionStatus, setSessionStatus] = useState('');
   const [file, setFile] = useState(null);
@@ -112,14 +110,29 @@ export default function MobileFoundItemUploadPage() {
           <>
             {previewUrl && <img className="mobile-upload-preview" src={previewUrl} alt="Selected item preview" />}
             <div className="mobile-upload-actions">
-              <input ref={cameraInput} className="found-upload-hidden" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={handleSelectFile} />
-              <input ref={galleryInput} className="found-upload-hidden" type="file" accept="image/jpeg,image/png,image/webp" onChange={handleSelectFile} />
-              <button type="button" className="btn-secondary" onClick={() => cameraInput.current?.click()} disabled={uploading}>
+              <label className="btn-secondary mobile-upload-file-action" aria-disabled={uploading}>
+                <input
+                  className="mobile-upload-file-input"
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleSelectFile}
+                  disabled={uploading}
+                  aria-label="Take photo with camera"
+                />
                 <Camera size={17} /> Take photo
-              </button>
-              <button type="button" className="btn-secondary" onClick={() => galleryInput.current?.click()} disabled={uploading}>
+              </label>
+              <label className="btn-secondary mobile-upload-file-action" aria-disabled={uploading}>
+                <input
+                  className="mobile-upload-file-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleSelectFile}
+                  disabled={uploading}
+                  aria-label="Choose photo from gallery"
+                />
                 <ImagePlus size={17} /> Choose from gallery
-              </button>
+              </label>
             </div>
             {file && (
               <div className="mobile-upload-confirm">
